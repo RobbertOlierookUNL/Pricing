@@ -1,11 +1,11 @@
 import React from "react";
-import RollPickApp from "../../components/RollPickApp";
+import DashboardPickApp from "../../components/DashboardPickApp";
 
-const CatKnown = () => {
+const DashboardPickPage = () => {
 	return (
-		<RollPickApp/>
+		<DashboardPickApp/>
 	);
 };
 
 
-export default CatKnown;
+export default DashboardPickPage;

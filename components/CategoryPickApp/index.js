@@ -2,9 +2,10 @@ import React from "react";
 import Sider from "../Sider";
 import Background from "../Background";
 import View from "../View";
+import {useRouter} from "next/router";
 
-import CategoryPickCardLayout from "./CategoryPickCardLayout";
-import CategoryPickCard from "./CategoryPickCard";
+import PickCardLayout from "../PickCards/PickCardLayout";
+import PickCard from "../PickCards/PickCard";
 
 import candyPinkBackgrund from "../../res/candy-pink-background.jpg";
 import homecare from "../../res/homecare.jpg";
@@ -15,16 +16,22 @@ import refreshment from "../../res/refreshment.jpg";
 
 
 const CategoryPickApp = () => {
+	const Router = useRouter();
+
+	const goToRoute = route => () => {
+		Router.push(`/${route}`);
+	};
+
 	return (
 		<Background image={candyPinkBackgrund}>
 			<Sider title="Pricing Tool"/>
 			<View>
-				<CategoryPickCardLayout>
-					<CategoryPickCard title="Foods" image={food} route="food"/>
-					<CategoryPickCard title="Refreshments" image={refreshment} route="refr"/>
-					<CategoryPickCard title="Home Care" image={homecare} route="hc"/>
-					<CategoryPickCard title="Beauty and Personal Care" image={personalcare} route="bpc"/>
-				</CategoryPickCardLayout>
+				<PickCardLayout type="2x2">
+					<PickCard title="Foods" image={food} route={goToRoute("food")}/>
+					<PickCard title="Refreshments" image={refreshment} route={goToRoute("refr")}/>
+					<PickCard title="Home Care" image={homecare} route={goToRoute("hc")}/>
+					<PickCard title="Beauty and Personal Care" image={personalcare} route={goToRoute("bpc")}/>
+				</PickCardLayout>
 			</View>
 		</Background>
 	);
