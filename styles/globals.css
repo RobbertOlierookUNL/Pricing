@@ -14,3 +14,52 @@ a {
 * {
   box-sizing: border-box;
 }
+
+.absolute-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.heavy-shadow {
+  text-shadow:
+    1px 1px 3px black,
+    2px 2px 5px black,
+    1px 2px 4px black;
+}
+.card-title {
+  color: white;
+  text-align: center;
+  font-size: 1.85em;
+}
+.background-cover {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  background-size: cover !important;
+}
+.pick-grid {
+  display: grid;
+  gap: 100px;
+}
+.pick-2x1 {
+  grid-template: 500px / 200px 200px;
+}
+.pick-card {
+  border-radius: 3px;
+  background-size: cover !important;
+  position: relative;
+  filter: grayscale(60%);
+  box-shadow: 1px 1px 5px #333;
+  transition: filter 400ms, transform 400ms;
+  transform: scale(1);
+  cursor: pointer;
+}
+.pick-card:hover {
+  filter: grayscale(0%);
+  transform: scale(1.1);
+}
+.pick-2x1-card {
+  width: 200px;
+  height: 500px;
+}
