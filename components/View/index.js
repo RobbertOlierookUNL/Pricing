@@ -1,12 +1,12 @@
 import React from "react";
 
-const View = ({children}) => {
+const View = ({children, rightSider=false}) => {
 	return (
 		<div className="view">
 			{children}
 			<style jsx>{`
         position: relative;
-        width: calc(100% - 100px);
+        width: calc(100% - ${rightSider ? "300px" : "100px"});
         left: 100px;
         height: 100%;
      `}</style>

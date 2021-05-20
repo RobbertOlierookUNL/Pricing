@@ -27,6 +27,19 @@ a {
     2px 2px 5px black,
     1px 2px 4px black;
 }
+.shadow {
+  box-shadow: 1px 1px 5px #333;
+}
+.text-shadow {
+  text-shadow: 1px 1px 5px #333;
+}
+.unl-blue {
+  background-color: #1F36C7;
+}
+.pos-rel {
+  position: relative;
+}
+
 .number-circle {
   position: absolute;
   width: 25px;
@@ -73,7 +86,6 @@ a {
   height: 100%;
   width: 100%;
   filter: grayscale(60%);
-  box-shadow: 1px 1px 5px #333;
   transition: filter 400ms, transform 400ms;
   transform: scale(1);
   cursor: pointer;
@@ -99,4 +111,15 @@ a {
 }
 .pick-card-sixth {
   grid-area: sixth;
+}
+
+.header-title {
+  color: white;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 15px;
+  font-weight: bold;
+  font-size: 1.4em;
+
 }

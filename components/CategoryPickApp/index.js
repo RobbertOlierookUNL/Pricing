@@ -2,7 +2,6 @@ import React from "react";
 import Sider from "../Sider";
 import Background from "../Background";
 import View from "../View";
-import {useRouter} from "next/router";
 
 import PickCardLayout from "../PickCards/PickCardLayout";
 import PickCard from "../PickCards/PickCard";
@@ -13,14 +12,13 @@ import food from "../../res/food.jpg";
 import personalcare from "../../res/personalcare.jpg";
 import refreshment from "../../res/refreshment.jpg";
 
+import useCardRouter from "../../util/useCardRouter";
+
 
 
 const CategoryPickApp = () => {
-	const Router = useRouter();
 
-	const goToRoute = route => () => {
-		Router.push(`/${route}`);
-	};
+	const goToRoute = useCardRouter();
 
 	return (
 		<Background image={candyPinkBackgrund}>
