@@ -33,6 +33,25 @@ a {
 .text-shadow {
   text-shadow: 1px 1px 5px #333;
 }
+
+.hover-pop {
+  cursor: pointer;
+  box-shadow: 0 0 0 #bbb;
+  transition: transform 250ms, box-shadow 250ms;
+}
+.hover-pop:hover {
+  transform: scale(1.1);
+  box-shadow: 1px 1px 3px #bbb;
+}
+
+.text-hover-pop {
+  cursor: pointer;
+  transition: transform 250ms;
+}
+.text-hover-pop:hover {
+  transform: scale(1.1);
+}
+
 .unl-blue {
   background-color: #1F36C7;
 }

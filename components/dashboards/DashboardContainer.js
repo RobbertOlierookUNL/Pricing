@@ -5,10 +5,10 @@ const DashboardContainer = ({children, type}) => {
 		<div className={`absolute-center shadow ${type ? type : ""}`}>
 			{children}
 			<style jsx>{`
-        width: 90%;
-        height: 90%;
-        max-width: 1100px;
-        max-height: 750px;
+        width: calc(100% - 28px);
+        height: calc(100% - 28px);
+        max-width: 2500px;
+        max-height: 2000px;
 
         .with-header-and-footer {
           display: grid;

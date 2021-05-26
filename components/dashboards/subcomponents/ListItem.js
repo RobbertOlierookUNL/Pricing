@@ -18,7 +18,11 @@ const ListItem = ({item}) => {
 				color: #ddd;
 				margin: 5px;
 				transition: all 200ms;
+				cursor: pointer;
 
+				:hover {
+					transform: scale(1.1);
+				}
 				.active {
 					color: white;
 					transform: scale(1.2);
