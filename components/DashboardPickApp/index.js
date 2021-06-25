@@ -23,6 +23,27 @@ const DashboardPickApp = () => {
 
 	const goToRoute = useCardRouter("category");
 
+	const testmail = async () => {
+		try {
+
+			const res = await fetch("/api/email/test", {
+				method: "PATCH",
+				body: JSON.stringify({
+					data: "data"
+				}),
+				headers: {
+					"Content-type": "application/json; charset=UTF-8"
+				}
+			});
+
+			const json = await res.json();
+			if (!res.ok) throw Error(json.message);
+
+		} catch (e) {
+			throw Error(e.message);
+		}
+	};
+
 	return (
 		<Background image={candyPinkBackgrund}>
 			<Sider title="Pricing Tool"/>
@@ -32,7 +53,7 @@ const DashboardPickApp = () => {
 					<PickCard title="Gepland" image={rsv} route={goToRoute("plan")}/>
 					<PickCard title="Erosie" image={erosie} route={goToRoute("erosion")} total={34} alert={6}/>
 					<PickCard title="Kansen" image={kansen} route={goToRoute("chances")}/>
-					<PickCard title="Laagstand" image={low} route={goToRoute("low")}/>
+					<PickCard title="Laagstand" image={low} route={testmail}/>
 					<PickCard type="sixth" title="Adviezen" image={advice} route={goToRoute("advices")}/>
 				</PickCardLayout>
 			</View>
