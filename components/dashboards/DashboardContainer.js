@@ -9,10 +9,13 @@ const DashboardContainer = ({children, type}) => {
         height: calc(100% - 28px);
         max-width: 2500px;
         max-height: 2000px;
+				/* overflow: auto; */
+				display: relative;
 
         .with-header-and-footer {
           display: grid;
-          grid-template-rows: 60px auto 60px;
+          grid-template-rows: 30px auto 60px;
+					grid-template-columns: 100%;
         }
     `}</style>
 		</div>

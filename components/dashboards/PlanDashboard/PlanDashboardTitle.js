@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { ActiveConcept } from "../PlanDashboard";
+import { ActiveConcept } from "../../../pages/[category]/plan";
 
 
 const PlanDashboardTitle = () => {

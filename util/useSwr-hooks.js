@@ -5,7 +5,7 @@ function fetcher(url) {
 }
 
 const createSwrHook = (url, dataName = "data", params) => {
-	const { data, error } = useSWR(`/api/${url}${params ? "?" : ""}${params ? Object.entries(params).map(([key, value]) => `${key}=${value}`).join("&") : ""}`, fetcher);
+	const { data, error } = useSWR(`/api/${url}${params ? "?" : ""}${params ? Object.entries(params).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join("&") : ""}`, fetcher);
 	return {
 		[dataName]: data,
 		[`${dataName}IsLoading`]: !error && !data,
@@ -13,16 +13,26 @@ const createSwrHook = (url, dataName = "data", params) => {
 	};
 };
 
+export function useRetailers() {
+	return createSwrHook("rsp/get-retailer-info", "retailers");
+}
 
-export function useBrandsFromCategory(category) {
+export function useCategoriesFromCategory(category) {
+	return createSwrHook("rsp/get-categories-from-category", "categories", {category});
+}
+
+export function useBrandsFromCategory(categories) {
+	const category = JSON.stringify(categories);
 	return createSwrHook("rsp/get-all-brands-from-category", "brands", {category});
 }
 
-export function useConceptsFromBrand(category, brand) {
+export function useConceptsFromBrand(categories, brand) {
+	const category = JSON.stringify(categories);
 	return createSwrHook("rsp/get-all-concepts-from-brand", "concepts", {category, brand});
 }
 
-export function useEansFromConcept(category, brand, concept) {
+export function useEansFromConcept(categories, brand, concept) {
+	const category = JSON.stringify(categories);
 	return createSwrHook("rsp/get-all-eans-from-concept", "eans", {category, brand, concept});
 }
 export function useDataFromEans(eans) {

@@ -3,20 +3,22 @@ import { query } from "../../../lib/db";
 
 
 const handler = async (req, res) => {
-	const { category: unparsed, brand, concept } = req.query;
-	if (concept && concept !== "undefined") {
+	const { category } = req.query;
+	console.log(category);
+	if (category && category !== "undefined") {
 
 		try {
-			const category = unparsed ? JSON.parse(unparsed) : [];
 
 			if (req.method === "GET") {
 				const results = await query(/* sql */`
-        SELECT DISTINCT ean_ce_bb FROM rsp_dashboard_basisbestand
-        WHERE concept_bb = ? AND brand_ul_bb = ? AND cluster_bb IN (${category.map(() => "?").toString()})
-    `, [concept, brand, ...category]
+        SELECT dashboard_category FROM pricing_tool_mapping_category
+        WHERE tool_category = ?
+    `, category
 				);
+				const myResults = results.map(o => o.dashboard_category);
+				// return res.json(results.map(o => o.dashboard_category));
+				return res.json(myResults);
 
-				return res.json(results.map(o => o.ean_ce_bb));
 			} else {
 				res.status(400).json({ message: `Does not support a ${req.method} request` });
 			}

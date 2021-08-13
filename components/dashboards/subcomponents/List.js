@@ -1,18 +1,28 @@
-import React, {useEffect, useContext} from "react";
-import { ActiveConcept } from "../PlanDashboard";
+import React, {useEffect} from "react";
 
 import ListItem from "./ListItem";
 
-const List = ({items}) => {
-	const [, setActiveConcept] = useContext(ActiveConcept);
+const List = ({items, activeItem, handleClick, setter, size="m"}) => {
 
 	useEffect(() => {
-		setActiveConcept(items[0]);
-	}, []);
+		items && setter();
+	}, [items]);
+
 
 	return (
-		<div className="absolute-center">
-			{items.map(item => <ListItem key={item} item={item}/>)}
+		<div className={`list-${size}`}>
+			{Array.isArray(items) && items?.map(item => <ListItem key={item} item={item} activeItem={activeItem} handleClick={handleClick}/>)}
+			<style jsx>{`
+				.list-s {
+					width: 150px;
+				}
+				.list-m {
+					width: 180px;
+				}
+				.list-l {
+					width: 250px;
+				}
+			`}</style>
 		</div>
 	);
 };

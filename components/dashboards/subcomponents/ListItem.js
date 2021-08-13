@@ -1,21 +1,18 @@
-import React, {useContext} from "react";
-import { ActiveConcept } from "../PlanDashboard";
+import React from "react";
 
-const ListItem = ({item}) => {
-	const [activeConcept, setActiveConcept] = useContext(ActiveConcept);
+const ListItem = ({item, activeItem, handleClick}) => {
 
-	const selectNewConcept = () => setActiveConcept(item);
 
-	const thisItemActive = activeConcept === item;
+	const thisItemActive = activeItem === item;
 
 	return (
 		<div
 			className={`${thisItemActive ? "active text-shadow" : ""}`}
-			onClick={selectNewConcept}
+			onClick={handleClick(item)}
 		>
 			{item}
 			<style jsx>{`
-				color: #ddd;
+				color: #eee;
 				margin: 5px;
 				transition: all 200ms;
 				cursor: pointer;

@@ -91,7 +91,7 @@ a {
 .background-cover {
   width: 100vw;
   height: 100vh;
-  position: absolute;
+  position: fixed;
   background-size: cover !important;
 }
 .pick-grid {
@@ -139,6 +139,9 @@ a {
   transform: translateY(-50%);
   margin-left: 15px;
   font-weight: bold;
-  font-size: 1.4em;
+  font-size: 1.1em;
+}
 
+.clickable {
+  cursor: pointer;
 }

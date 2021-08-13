@@ -4,9 +4,9 @@ import Table from "../subcomponents/Table";
 const fakedata = new Array(25).fill(".");
 
 
-const PlanDashboardContent = () => {
+const PlanDashboardContent = ({data, errorState, loadingState}) => {
 	return (
-		<Table headers="retailers" twoCap data={fakedata}/>
+		<Table data={data} errorState={errorState} loadingState={loadingState}/>
 	);
 };
 

@@ -6,7 +6,7 @@ const View = ({children, rightSider=false}) => {
 			{children}
 			<style jsx>{`
         position: relative;
-        width: calc(100% - ${rightSider ? "300px" : "100px"});
+        width: calc(100% - ${rightSider ? "200px" : "100px"});
         left: 100px;
         height: 100%;
      `}</style>
