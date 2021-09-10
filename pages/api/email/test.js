@@ -1,52 +1,131 @@
 import XLSX from "xlsx-style";
 import XLSX1 from "xlsx";
+
+import { excelText, mailHtml, mailText } from "../../../lib/text";
 import {unilever_blue} from "../../../lib/colors";
 
 
-export default function (req, res) {
-	let nodemailer = require("nodemailer");
-	const transporter = nodemailer.createTransport({
-		port: 587,
-		host: "smtp.office365.com",
-		auth: {
-			user: "robbert_olierook@hotmail.com",
-			pass: "M@#7cuH2",
+
+
+const createAndSendMail = (transporter, arrayOfObjects, category, retailer) => new Promise(function(resolve, reject) {
+	const newArrayOfObjects = [
+		{
+			offset: "",
+			EAN: "EAN",
+			Productomschrijving: "Productomschrijving",
+			RSP: "RSP",
+			Adviesprijs: "Adviesprijs",
+			Marge: "Marge",
 		},
-		secure: false,
-	});
+		...arrayOfObjects
+	];
+	const tl = XLSX1.utils.json_to_sheet(newArrayOfObjects);
+	const range = XLSX.utils.decode_range(tl["!ref"]);
+	range.s.r = 1;
+	range.s.c = 1;
+	const endRow = {...range.e}.r;
+	range.e.r += 7;
+	const textRow = range.e.r;
+	console.log({range});
+	tl["!ref"] = XLSX.utils.encode_range(range);
+	tl["!cols"] = [{wch: 2}, {wch: 13}, {wch: 50}, {wch: 13}, {wch: 13}, {wch: 13}];
+	tl["!merges"] = [{s: {c: 1, r: textRow - 3}, e: {c: 5, r: textRow}}];
 
-
-	const tl = XLSX1.utils.json_to_sheet([{test1: "value", test2: "value2"}, {test1: "value3", test2: "value4"}]);
 	const styledTl = {};
 	Object.entries(tl).map(([key, value]) => {
-		if (key.length === 2) {
-			const row = parseInt(key[1]);
-			if (row === 1) {
+		const cell = XLSX.utils.decode_cell(key);
+		const col = cell.c;
+		const row = cell.r;
+		if (col === 1) {
+			value = {...value, s: {
+				border: {
+					left: { style: "thin", color: { auto: 1 } },
+				}
+			}
+			};
+		}
+		if (col === 3 || col === 4 ) {
+			value = {...value, z: "€0.00"};
+		}
+		if (col === 5) {
+			value = {...value, s: {
+				border: {
+					right: { style: "thin", color: { auto: 1 } },
+				}
+			},
+			z: "€#,##0"
+			};
+		}
+		if (row === endRow) {
+			value = {...value, s: {
+				border: {
+					...value?.s?.border,
+					bottom: { style: "thin", color: { auto: 1 } },
+				}
+			}
+			};
+		}
+		if (row === 1) {
+			value = {...value, s: {
+				fill: {
+					patternType: "solid",
+					fgColor: { rgb: unilever_blue.color.slice(1) },
+				},
+				font: {
+					sz: 16,
+					color: { rgb: "FFFFFF" },
+					bold: true,
+					italic: false,
+					underline: false
+				},
+				border: {
+					...value?.s?.border,
+					top: { style: "thin", color: { auto: 1 } },
+				}
+			}
+			};
+		} else if (col > 0 && row > 0 && row <= endRow) {
+			if (row % 2) {
 				value = {...value, s: {
-					 			fill: {
-						patternType: "solid", // none / solid
-						fgColor: { rgb: unilever_blue.color.slice(1) },
-						// bgColor: { rgb: "FFFFFFAA" }
+					...value?.s,
+					fill: {
+						patternType: "solid",
+						fgColor: { rgb: "DDDDDD" },
 					},
-					font: {
-						sz: 16,
-						color: { rgb: "FFFFFF" },
-						bold: true,
-						italic: false,
-						underline: false
-					},
-					border: {
-						top: { style: "thin", color: { auto: 1 } },
-						right: { style: "thin", color: { auto: 1 } },
-						bottom: { style: "thin", color: { auto: 1 } },
-						left: { style: "thin", color: { auto: 1 } }
-					}
 				}
 				};
+			} else {
+				value = {...value, s: {
+					...value?.s,
+					fill: {
+						patternType: "solid",
+						fgColor: { rgb: "FFFFFF" },
+					},
+				}
+
+				};
 			}
+			console.log({value});
+
 		}
+
 		styledTl[key] = value;
 	});
+	const textKey = XLSX.utils.encode_cell({c: 1, r: textRow-3});
+	styledTl[textKey] = {
+		v: excelText,
+		t: "s",
+		s: {
+			alignment: {
+				wrapText: "1",
+			},
+			border: {
+				left: { style: "thick", color: { rgb: unilever_blue.color.slice(1) } },
+
+			}
+		}
+	};
+
 	console.log({styledTl});
 	console.log({tl});
 
@@ -57,23 +136,94 @@ export default function (req, res) {
 	const mailData = {
 		from: "\"Adviesbot ✔\" <robbert_olierook@hotmail.com>",
 		to: "robbert.olierook@unilever.com",
-		subject: "Message From test",
-		text: "test",
-		html: "<div>test</div>",
+		subject: `${category} - ${retailer} | Vrijblijvend advies`,
+		text: mailText("Robbert", category, retailer),
+		html: mailHtml("Robbert", category, retailer),
 		attachments: [
 			{
-				filename: "test.xlsx",
+				filename: `Unilever-advies-${retailer}_${category}.xlsx`,
 				content: excelBuffer,
 			},
 		]
 	};
 	transporter.sendMail(mailData, function (err, info) {
-		if(err)
+
+		if(err) {
 			console.log(err);
-		else
+			reject();
+		}
+		else {
 			console.log(info);
+			resolve();
+		}
 	});
-	console.log(req.body);
+});
+
+
+
+const sendMultipleMails = async (transporter, advice) => {
+	const categories = Object.keys(advice);
+
+	for (const category of categories) {
+		let combinedData = [];
+		const brands = Object.keys(advice[category]);
+		for (const brand of brands) {
+			const concepts = Object.keys(advice[category][brand]);
+			for (const concept of concepts) {
+				combinedData = [...combinedData, ...advice[category][brand][concept].data];
+			}
+		}
+		const retailerMoveUp = combinedData.reduce((acc, val) => {
+			const newObject = {
+				offset: "",
+				EAN: val.ean,
+				Productomschrijving: val.description,
+				RSP: val.rsp,
+				Adviesprijs: val.advice,
+				Marge: val.margin,
+			};
+			if (Object.prototype.hasOwnProperty.call(acc, val.retailer)) {
+				acc[val.retailer].push(newObject);
+			} else {
+				acc[val.retailer] = [newObject];
+			}
+			return acc;
+		}, {});
+
+		for (const retailer of Object.keys(retailerMoveUp)) {
+			await createAndSendMail(transporter, retailerMoveUp[retailer], category.toUpperCase(), retailer);
+		}
+	}
+};
+
+
+export default function (req, res) {
+	const { advice } = req.body;
+	let nodemailer = require("nodemailer");
+
+	const transporter = nodemailer.createTransport({
+		port: 587,
+		host: "smtp.office365.com",
+		auth: {
+			user: process.env.ADVICEBOT_USER,
+			pass: process.env.ADVICEBOT_PASS,
+		},
+		secure: false,
+	});
+
+	sendMultipleMails(transporter, advice);
+
+
+
+
+
+
+
+
+
+	return res.json({advice});
+
+
 }
 
 // subject: `Message From ${req.body.name}`,

@@ -40,7 +40,6 @@ const handler = async (req, res) => {
 					WHERE EAN_code IN (${eans.map(() => "?").toString()})
 			`, eans
 				);
-				console.log({volume});
 
 
 				const myMap = mapping.reduce((acc, val) => {
@@ -64,19 +63,18 @@ const handler = async (req, res) => {
 					return acc;
 				}, []);
 				const nonEmptyResults = [];
-				const poolCapH = [];
-				const poolCapL = [];
+
 
 				for (const entry of reducedResults) {
 					let push = false;
 					let totalVolume = 0;
 					const prices = [];
+					const poolCapH = [];
+					const poolCapL = [];
 					const {Artikelomschrijving, EAN_CE, Referentie_EAN, CAP_H, CAP_L, ...others} = entry;
 					const thisRetailers = JSON.parse(JSON.stringify(showRetailer));
 					const addVolumePushPrice = (retailer, price, delta) => {
-						if (EAN_CE == 8711200428953) {
-							console.log({retailer, map: myMap[retailer]});
-						}
+
 						const myVolume = volume.find(e => e.EAN_code === (Referentie_EAN || EAN_CE) && e.Klant === myMap[retailer])?.CU_MAT_CY || 0;
 						totalVolume += myVolume;
 						prices.push({retailer, rsp: price, delta, volume: myVolume, ...retailerInfo[retailer]});

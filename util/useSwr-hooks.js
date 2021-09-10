@@ -13,9 +13,14 @@ const createSwrHook = (url, dataName = "data", params) => {
 	};
 };
 
+export function useDistance() {
+	return createSwrHook("distance/get-cap-distance", "distance");
+}
+
 export function useRetailers() {
 	return createSwrHook("rsp/get-retailer-info", "retailers");
 }
+
 
 export function useCategoriesFromCategory(category) {
 	return createSwrHook("rsp/get-categories-from-category", "categories", {category});
