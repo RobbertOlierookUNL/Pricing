@@ -1,20 +1,21 @@
 import "../styles/globals.css";
 
-import React, {createContext} from "react";
+import React from "react";
 
-import { adviceStoreReducer } from "../util/reducers";
-import useGlobalState from "../util/useGlobalState";
+import { StoreProvider } from "../lib/Store";
+import { adviceStoreReducer, initialState } from "../util/reducers";
 
 
-export const AdviceStore = createContext();
+
+
+
 
 function MyApp({ Component, pageProps }) {
-	const ProvideAdviceStoreState = useGlobalState(AdviceStore, {grabAdvice: false, advice: {}}, adviceStoreReducer);
 
 	return (
-		<ProvideAdviceStoreState>
+		<StoreProvider initialState={initialState} reducer={adviceStoreReducer}>
 			<Component {...pageProps} />
-		</ProvideAdviceStoreState>
+		</StoreProvider>
 	);
 }
 

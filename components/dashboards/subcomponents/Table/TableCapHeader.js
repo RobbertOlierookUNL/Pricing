@@ -1,9 +1,25 @@
-import React from "react";
+import React, {useEffect, useContext} from "react";
+
+import { ActiveConcept } from "../../../../pages/[category]/plan";
 import {bottle_green} from "../../../../lib/colors";
 import TableOptions from "./TableOptions";
 
-const TableCapHeader = ({caphCount, capoCount, caplCount, doCapSelect}) => {
+
+const TableCapHeader = ({active,  caphCount, capoCount, caplCount, doCapSelect}) => {
 	const [capSelect, handleCapSelect] = doCapSelect;
+	const [activeConcept] = useContext(ActiveConcept);
+
+	useEffect(() => {
+		if (!capSelect.capH) {
+			handleCapSelect("capH")(true);
+		}
+		if (!capSelect.capL) {
+			handleCapSelect("capL")(true);
+		}
+	}, [activeConcept]);
+
+
+
 	return (
 		<div>
 			<TableOptions/>

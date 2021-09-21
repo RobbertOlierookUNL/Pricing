@@ -8,13 +8,30 @@ import {makeRetailSalesPrice, distanceMaker} from "util/functions";
 
 
 
-const TableRow = ({entry, even, headerSelections}) => {
+const TableRow = ({entry, even, headerSelections, isAlreadyInAdvice, isInAdviceStore, doSelectAll}) => {
 	const {prices, ...info} = entry;
 	const [retailerMode] = useContext(RetailerMode);
 	const {sortedData} = useRetailerSorter(prices, retailerMode);
 	const [adviceHigh, setAdviceHigh] = useState(info?.defaultAdviceHigh || 0);
 	const [adviceLow, setAdviceLow] = useState(info?.defaultAdviceLow || 0);
-	const [rowSelect, setRowSelect] = useState(true);
+
+	const {value, done, execute} = doSelectAll;
+
+	//// TODO: Make dynamic
+	const isAhListed = sortedData.some(e => e.retailer === "AH" && e.rsp > 0);
+	const isJumboListed = sortedData.some(e => e.retailer === "Jumbo L" && e.rsp > 0);
+	let defaultValue = (isAhListed && isJumboListed);
+	const [rowSelect, setRowSelect] = useState(defaultValue);
+
+
+	console.log({sortedData, isAhListed});
+
+	useEffect(() => {
+		if ((value !== "unset") && (done === false)) {
+			execute();
+			setRowSelect(value);
+		}
+	}, [done]);
 
 
 
@@ -54,11 +71,13 @@ const TableRow = ({entry, even, headerSelections}) => {
 					<PriceCard
 						key={price.retailer}
 						adviceStub={adviceStub}
-						retailer={price.retailer}
 						price={price}
 						advice={price.cap === "H" ? adviceHigh : currentLow}
+						isAlreadyInAdvice={isAlreadyInAdvice}
+						isInAdviceStore={isInAdviceStore}
 						rowSelect={rowSelect}
 						headerSelections={headerSelections}/>
+
 				);
 			})}
 			<style jsx>{`

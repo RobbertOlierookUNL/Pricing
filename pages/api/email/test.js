@@ -112,6 +112,11 @@ const createAndSendMail = (transporter, arrayOfObjects, category, retailer) => n
 		styledTl[key] = value;
 	});
 	const textKey = XLSX.utils.encode_cell({c: 1, r: textRow-3});
+	const textKey2 = XLSX.utils.encode_cell({c: 1, r: textRow-2});
+	const textKey3 = XLSX.utils.encode_cell({c: 1, r: textRow-1});
+	const textKey4 = XLSX.utils.encode_cell({c: 1, r: textRow});
+
+
 	styledTl[textKey] = {
 		v: excelText,
 		t: "s",
@@ -125,6 +130,27 @@ const createAndSendMail = (transporter, arrayOfObjects, category, retailer) => n
 			}
 		}
 	};
+	styledTl[textKey2] = {
+		s: {
+			border: {
+				left: { style: "thick", color: { rgb: unilever_blue.color.slice(1) } },
+			}
+		}
+	};
+	styledTl[textKey3] = {
+		s: {
+			border: {
+				left: { style: "thick", color: { rgb: unilever_blue.color.slice(1) } },
+			}
+		}
+	};
+	styledTl[textKey4] = {
+		s: {
+			border: {
+				left: { style: "thick", color: { rgb: unilever_blue.color.slice(1) } },
+			}
+		}
+	};
 
 	console.log({styledTl});
 	console.log({tl});
@@ -134,7 +160,7 @@ const createAndSendMail = (transporter, arrayOfObjects, category, retailer) => n
 	// const blob = new Blob([excelBuffer], {type: fileType});
 
 	const mailData = {
-		from: "\"Adviesbot ✔\" <robbert_olierook@hotmail.com>",
+		from: `"Adviesbot ✔" <${process.env.ADVICEBOT_USER}>"`,
 		to: "robbert.olierook@unilever.com",
 		subject: `${category} - ${retailer} | Vrijblijvend advies`,
 		text: mailText("Robbert", category, retailer),
@@ -149,14 +175,16 @@ const createAndSendMail = (transporter, arrayOfObjects, category, retailer) => n
 	transporter.sendMail(mailData, function (err, info) {
 
 		if(err) {
-			console.log(err);
+			console.log({err});
 			reject();
 		}
 		else {
-			console.log(info);
+			console.log({info});
 			resolve();
 		}
 	});
+
+
 });
 
 
@@ -191,7 +219,11 @@ const sendMultipleMails = async (transporter, advice) => {
 		}, {});
 
 		for (const retailer of Object.keys(retailerMoveUp)) {
+			// try {
 			await createAndSendMail(transporter, retailerMoveUp[retailer], category.toUpperCase(), retailer);
+			// } catch (e) {
+			// 	console.log({e});
+			// }
 		}
 	}
 };
@@ -204,6 +236,7 @@ export default function (req, res) {
 	const transporter = nodemailer.createTransport({
 		port: 587,
 		host: "smtp.office365.com",
+
 		auth: {
 			user: process.env.ADVICEBOT_USER,
 			pass: process.env.ADVICEBOT_PASS,

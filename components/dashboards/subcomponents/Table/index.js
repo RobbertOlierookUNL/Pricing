@@ -1,23 +1,39 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useContext} from "react";
 
 import TableHeader from "./TableHeader";
 import TableBody from "./TableBody";
 
 
-const Table = ({data, loadingState, errorState}) => {
+const Table = ({data, loadingState, errorState, doSelectAll}) => {
 
 	const [capSelect, setCapSelect] = useState({capH: true, capL: true});
 	const [retailerSelect, setRetailerSelect] = useState({});
+	const {value, done, execute} = doSelectAll;
 
 	useEffect(() => {
 		if (data?.headers) {
 			const tempObj = {};
 			for (const header of data.headers) {
-				tempObj[header.retailer] = true;
+				tempObj[header.retailer] = header.cap === "O" ? false : true;
 			}
 			setRetailerSelect(tempObj);
 		}
 	}, [data?.headers?.[0]?.retailer]);
+
+	useEffect(() => {
+		if ((data?.headers) && (value !== "unset") && (done === false)) {
+			execute();
+			const tempObj = {};
+			for (const header of data.headers) {
+				tempObj[header.retailer] = value;
+			}
+			setRetailerSelect(tempObj);
+			setCapSelect({capH: value, capL: value});
+
+		}
+	}, [done]);
+
+
 
 	const retailerBatchSelect = (retailers, value) => {
 		const retObj = {};
@@ -27,10 +43,8 @@ const Table = ({data, loadingState, errorState}) => {
 		setRetailerSelect({...retailerSelect, ...retObj});
 	};
 
-	const handleCapSelect = cap => () => {
-		const map = {capH: "H", capL: "L"};
-		const nextValue = !capSelect[cap];
-
+	const handleCapSelect = cap => (nextValue = !capSelect[cap]) => {
+		const map = {capH: "H", capL: "L", capO: "O"};
 		setCapSelect({...capSelect, [cap]: nextValue});
 		if (data?.headers) {
 			const capRetailers = [];
@@ -45,6 +59,7 @@ const Table = ({data, loadingState, errorState}) => {
 
 
 
+
 	const handleRetailerSelect = (retailer, nextValue = "undefined") => () => {
 		const thisNextValue = nextValue === "undefined" ? !retailerSelect[retailer] : nextValue;
 		setRetailerSelect({...retailerSelect, [retailer]: thisNextValue});
@@ -52,12 +67,12 @@ const Table = ({data, loadingState, errorState}) => {
 
 	return (
 		<div>
-			<TableHeader data={data?.headers} doRetailerSelect={[retailerSelect, handleRetailerSelect]} doCapSelect={[capSelect, handleCapSelect]}/>
-			{<TableBody data={data?.body} errorState={errorState} loadingState={loadingState} headerSelections={[retailerSelect, capSelect]}/>}
+			{!loadingState && <TableHeader data={data?.headers} doRetailerSelect={[retailerSelect, handleRetailerSelect]} doCapSelect={[capSelect, handleCapSelect]}/>}
+			<TableBody data={data?.body} errorState={errorState} doSelectAll={doSelectAll} loadingState={loadingState} headerSelections={[retailerSelect, capSelect]}/>
 			<style jsx>{`
 				font-size: 11px;
 				background-color: white;
-				width: fit-content;
+				width: ${loadingState ? "100%" : "fit-content"};
 			`}</style>
 		</div>
 	);

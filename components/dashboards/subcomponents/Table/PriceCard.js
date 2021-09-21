@@ -1,20 +1,32 @@
 import NumberFormat from "react-number-format";
-import React, {useState, useEffect, useContext} from "react";
+import React, { useState, useEffect } from "react";
 
-import { AdviceStore } from "../../../../pages/_app";
-import {ballet_pink, bottle_green, sunset_red, unilever_blue, denim_blue} from "../../../../lib/colors";
+import {ballet_pink, bottle_green, sunset_red, unilever_blue, denim_blue, orchid_purple} from "../../../../lib/colors";
+import { collectConcept } from "../../../../util/reducers";
+import { useStore } from "../../../../lib/Store";
 import EuroFormat from "../../../EuroFormat";
+import advices from "../../../../pages/advices";
 
 
 
 
-const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections}) => {
-	const [localState, setLocalState] = useState(true);
-	const [{grabAdvice, advice: advices}, adviceDispatch] = useContext(AdviceStore);
+
+
+
+
+const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections, isAlreadyInAdvice, isInAdviceStore}) => {
+	const [{grabAdvice, advice: advices}, adviceDispatch] = useStore();
 	const [retailerSelect, capSelect] = headerSelections;
 
-	const columnSelect = retailerSelect[price.retailer];
+	const inAdvice = isInAdviceStore && isAlreadyInAdvice(adviceStub.ean, price.retailer);
+	const adviceButNotInAdvice = isInAdviceStore && !isAlreadyInAdvice(adviceStub.ean, price.retailer);
+
+
 	const couldBeAdviced = price.rsp && (price.rsp < advice);
+
+	const [localState, setLocalState] = useState(!adviceButNotInAdvice && couldBeAdviced);
+
+	const columnSelect = retailerSelect[price.retailer];
 	const selectedForAdvice = couldBeAdviced && localState;
 
 	useEffect(() => {
@@ -23,7 +35,7 @@ const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections}) => 
 			const difference = advice - rsp;
 			const margin = difference * volume;
 			const adviceEntry = {...adviceStub, rsp, margin, retailer, advice};
-			adviceDispatch({type: "collectConcept", value: adviceEntry});
+			adviceDispatch(collectConcept(adviceEntry));
 		}
 	}, [grabAdvice]);
 
@@ -42,7 +54,7 @@ const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections}) => 
 	// }, [gridSelect]);
 
 	const handleLocalChange = () => {
-		setLocalState(!localState);
+		couldBeAdviced && setLocalState(!localState);
 	};
 
 	return (
@@ -65,6 +77,8 @@ const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections}) => 
 						height: 100%;
 						${(!price.rsp && !price.volume) ? `background-color: ${ballet_pink.color} !important;` : !price.rsp ? "background-color: #bbb !important;": ""}
 						${selectedForAdvice ? `background-color: ${denim_blue.color} !important` : ""};
+						${selectedForAdvice && inAdvice ? `background-color: ${orchid_purple.color} !important` : ""};
+
 						${selectedForAdvice ? `color: ${denim_blue.text}` : ""};
 
 

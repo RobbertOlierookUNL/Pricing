@@ -7,7 +7,7 @@ const PlanDashboardTitle = () => {
 
 	return (
 		<div className="header-title">
-      Gepland - {activeConcept}
+			{activeConcept}
 		</div>
 	);
 };
