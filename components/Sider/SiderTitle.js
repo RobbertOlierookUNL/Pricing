@@ -6,7 +6,7 @@ const SiderTitle = ({title}) => {
 	const goHome = () => Router.push("/");
 
 	return (
-		<div onClick={goHome}>
+		<div className="clickable" onClick={goHome}>
 			{title}
 			<style jsx>{`
         background-color: #9c44c0;
@@ -20,7 +20,6 @@ const SiderTitle = ({title}) => {
         color: white;
         font-size: 1.2em;
         text-shadow: 0px 0px 5px black;
-        cursor: pointer;
       `}</style>
 		</div>
 	);

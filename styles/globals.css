@@ -27,6 +27,62 @@ a {
     2px 2px 5px black,
     1px 2px 4px black;
 }
+.shadow {
+  box-shadow: 1px 1px 5px #333;
+}
+.text-shadow {
+  text-shadow: 1px 1px 5px #333;
+}
+
+.hover-pop {
+  cursor: pointer;
+  box-shadow: 0 0 0 #bbb;
+  transition: transform 250ms, box-shadow 250ms;
+}
+.hover-pop:hover {
+  transform: scale(1.1);
+  box-shadow: 1px 1px 3px #bbb;
+}
+
+.text-hover-pop {
+  cursor: pointer;
+  transition: transform 250ms;
+}
+.text-hover-pop:hover {
+  transform: scale(1.1);
+}
+
+.unl-blue {
+  background-color: #1F36C7;
+}
+.pos-rel {
+  position: relative;
+}
+
+.number-circle {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  border-radius: 50%;
+  color: white;
+  text-align: center;
+  line-height: 24px;
+  font-size: 0.8em;
+  box-shadow: 0px -1px 5px #333;
+  text-shadow: -1px 2px 3px #333;
+}
+.number-circle-total {
+  top: -14px;
+  right: -13.5px;
+  background: #1F36C7;
+}
+.number-circle-alert {
+  top: -14px;
+  right: 17.5px;
+  background: #ff544f;
+}
 .card-title {
   color: white;
   text-align: center;
@@ -35,22 +91,20 @@ a {
 .background-cover {
   width: 100vw;
   height: 100vh;
-  position: absolute;
+  position: fixed;
   background-size: cover !important;
 }
 .pick-grid {
   display: grid;
   gap: 100px;
 }
-.pick-2x1 {
-  grid-template: 500px / 200px 200px;
-}
 .pick-card {
   border-radius: 3px;
   background-size: cover !important;
   position: relative;
+  height: 100%;
+  width: 100%;
   filter: grayscale(60%);
-  box-shadow: 1px 1px 5px #333;
   transition: filter 400ms, transform 400ms;
   transform: scale(1);
   cursor: pointer;
@@ -59,7 +113,35 @@ a {
   filter: grayscale(0%);
   transform: scale(1.1);
 }
-.pick-2x1-card {
-  width: 200px;
-  height: 500px;
+.pick-2x1 {
+  grid-template: 500px / 200px 200px;
+}
+.pick-2x2 {
+  grid-template: 200px 200px / 200px 200px;
+}
+.pick-141 {
+  grid-template:
+  "first second third sixth" 200px
+  "first fourth fifth sixth" 200px
+  / 200px 200px 200px 200px;
+}
+.pick-card-first {
+  grid-area: first;
+}
+.pick-card-sixth {
+  grid-area: sixth;
+}
+
+.header-title {
+  color: white;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 15px;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.clickable {
+  cursor: pointer;
 }
