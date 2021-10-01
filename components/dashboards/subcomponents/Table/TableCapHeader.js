@@ -5,27 +5,27 @@ import {bottle_green} from "../../../../lib/colors";
 import TableOptions from "./TableOptions";
 
 
-const TableCapHeader = ({active,  caphCount, capoCount, caplCount, doCapSelect}) => {
+const TableCapHeader = ({caphCount, capoCount, caplCount, doCapSelect}) => {
 	const [capSelect, handleCapSelect] = doCapSelect;
-	const [activeConcept] = useContext(ActiveConcept);
+	// const [activeConcept] = useContext(ActiveConcept);
 
-	useEffect(() => {
-		if (!capSelect.capH) {
-			handleCapSelect("capH")(true);
-		}
-		if (!capSelect.capL) {
-			handleCapSelect("capL")(true);
-		}
-	}, [activeConcept]);
+	// useEffect(() => {
+	// 	if (capSelect.capH) {
+	// 		handleCapSelect("capH")(false);
+	// 	}
+	// 	if (capSelect.capL) {
+	// 		handleCapSelect("capL")(false);
+	// 	}
+	// }, [activeConcept]);
 
 
 
 	return (
 		<div>
 			<TableOptions/>
-			<div className={`caph clickable visible-cap ${capSelect.capH ? "" : "deselect"}`} onClick={handleCapSelect("capH")}>CAP H</div>
-			{capoCount ? <div className="capo"/> : <></>}
-			<div className={`capl clickable visible-cap ${capSelect.capL ? "" : "deselect"}`} onClick={handleCapSelect("capL")}>CAP L</div>
+			<div className={`caph clickable visible-cap ${capSelect.capH ? "" : "deselect"}`} onClick={() => handleCapSelect("capH")()}>CAP H</div>
+			{capoCount ? <div className="capo" onClick={() => handleCapSelect("capO")()}/> : <></>}
+			<div className={`capl clickable visible-cap ${capSelect.capL ? "" : "deselect"}`} onClick={() => handleCapSelect("capL")()}>CAP L</div>
 			<style jsx>{`
 				width: 100%;
 				display: inline-grid;

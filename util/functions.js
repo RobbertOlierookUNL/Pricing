@@ -74,3 +74,42 @@ export const getTodayString = () => {
 	return "Date_" + dayString + monthString + yearString;
 
 };
+
+export const getAvg = (arr) => arr.reduce(function(p,c,i){return p+(c-p)/(i+1);},0);
+
+
+export const getAdvicePrices = (poolCapH, poolCapL, capH, capL) => {
+	const defaultAdviceHigh = {};
+	const defaultAdviceLow = {};
+
+	const maxLowValue = Math.max(...poolCapL);
+	const maxHighValue = Math.max(...poolCapH);
+
+	const directLowOpportunity = poolCapL.sort()[1];
+	const directHighOpportunity = poolCapH.sort()[1];
+
+	const poolAllHigh = [...poolCapH, distanceMaker(maxLowValue, true)];
+	const poolAllLow = [...poolCapL, distanceMaker(maxHighValue)];
+
+
+
+	defaultAdviceHigh.highBased = Math.min(maxHighValue, capH);
+	defaultAdviceLow.highBased = makeRetailSalesPrice(distanceMaker(defaultAdviceHigh.highBased));
+
+	defaultAdviceLow.lowBased = Math.min(maxLowValue, capL);
+	defaultAdviceHigh.lowBased = makeRetailSalesPrice(distanceMaker(defaultAdviceLow.lowBased, true));
+
+	defaultAdviceHigh.directOpportunities = directHighOpportunity;
+	defaultAdviceLow.directOpportunities = directLowOpportunity;
+
+	defaultAdviceHigh.pushAdvice = Math.min(makeRetailSalesPrice(getAvg(poolCapH) * 1.1), capH);
+	defaultAdviceLow.pushAdvice = makeRetailSalesPrice(distanceMaker(defaultAdviceHigh.pushAdvice));
+
+	defaultAdviceHigh.opportune = Math.min(makeRetailSalesPrice(Math.max(...poolAllHigh)), capH);
+	defaultAdviceLow.opportune = makeRetailSalesPrice(distanceMaker(defaultAdviceHigh.opportune));
+
+	defaultAdviceHigh.cap = capH;
+	defaultAdviceLow.cap = capL;
+
+	return [defaultAdviceHigh, defaultAdviceLow];
+};

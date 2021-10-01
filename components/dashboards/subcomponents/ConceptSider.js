@@ -1,13 +1,17 @@
-import React, {useContext} from "react";
-import { ActiveConcept, ActiveBrand } from "../../../pages/[category]/plan";
+import React from "react";
 
 import {bottle_green} from "../../../lib/colors";
-
 import List from "./List";
+import useCategory from "../../../util/useCategory";
+import useConfig from "../../../util/useConfig";
+
 
 const ConceptSider = ({brands, concepts}) => {
-	const [activeConcept, setActiveConcept] = useContext(ActiveConcept);
-	const [activeBrand, setActiveBrand] = useContext(ActiveBrand);
+	// const [activeConcept, setActiveConcept] = useContext(ActiveConcept);
+	// const [activeBrand, setActiveBrand] = useContext(ActiveBrand);
+	const category = useCategory();
+	const [activeBrand, setActiveBrand] = useConfig("lastActiveBrand-"+category);
+	const [activeConcept, setActiveConcept] = useConfig("lastActiveConcept-"+category+activeBrand);
 
 	const handleClickConcept = (item) => () => setActiveConcept(item);
 	const handleClickBrand = (item) => () => setActiveBrand(item);

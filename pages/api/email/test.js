@@ -8,6 +8,15 @@ import {unilever_blue} from "../../../lib/colors";
 
 
 const createAndSendMail = (transporter, arrayOfObjects, category, retailer) => new Promise(function(resolve, reject) {
+	const totalMargin = arrayOfObjects.reduce((acc, val) => {
+		acc += val.Marge || 0;
+		return acc;
+	}, 0);
+
+	const hasMargin = !!totalMargin;
+	const endColumn = hasMargin ? 5 : 4;
+	const mainCharacters = hasMargin ? 13 : 16;
+	const descriptionCharacters = hasMargin ? 51 : 55;
 	const newArrayOfObjects = [
 		{
 			offset: "",
@@ -23,13 +32,14 @@ const createAndSendMail = (transporter, arrayOfObjects, category, retailer) => n
 	const range = XLSX.utils.decode_range(tl["!ref"]);
 	range.s.r = 1;
 	range.s.c = 1;
+	range.e.c = endColumn;
 	const endRow = {...range.e}.r;
 	range.e.r += 7;
 	const textRow = range.e.r;
 	console.log({range});
 	tl["!ref"] = XLSX.utils.encode_range(range);
-	tl["!cols"] = [{wch: 2}, {wch: 13}, {wch: 50}, {wch: 13}, {wch: 13}, {wch: 13}];
-	tl["!merges"] = [{s: {c: 1, r: textRow - 3}, e: {c: 5, r: textRow}}];
+	tl["!cols"] = [{wch: 2}, {wch: mainCharacters}, {wch: descriptionCharacters}, {wch: mainCharacters}, {wch: mainCharacters}, {wch: mainCharacters}];
+	tl["!merges"] = [{s: {c: 1, r: textRow - 3}, e: {c: endColumn, r: textRow}}];
 
 	const styledTl = {};
 	Object.entries(tl).map(([key, value]) => {
@@ -48,12 +58,16 @@ const createAndSendMail = (transporter, arrayOfObjects, category, retailer) => n
 			value = {...value, z: "€0.00"};
 		}
 		if (col === 5) {
+			value = {...value,
+				z: "€#,##0"
+			};
+		}
+		if (col === endColumn) {
 			value = {...value, s: {
 				border: {
 					right: { style: "thin", color: { auto: 1 } },
 				}
 			},
-			z: "€#,##0"
 			};
 		}
 		if (row === endRow) {
@@ -126,8 +140,7 @@ const createAndSendMail = (transporter, arrayOfObjects, category, retailer) => n
 			},
 			border: {
 				left: { style: "thick", color: { rgb: unilever_blue.color.slice(1) } },
-
-			}
+			},
 		}
 	};
 	styledTl[textKey2] = {
@@ -152,7 +165,6 @@ const createAndSendMail = (transporter, arrayOfObjects, category, retailer) => n
 		}
 	};
 
-	console.log({styledTl});
 	console.log({tl});
 
 	const wb = { Sheets: { "topLevel": styledTl}, SheetNames: ["topLevel"] };
@@ -167,7 +179,7 @@ const createAndSendMail = (transporter, arrayOfObjects, category, retailer) => n
 		html: mailHtml("Robbert", category, retailer),
 		attachments: [
 			{
-				filename: `Unilever-advies-${retailer}_${category}.xlsx`,
+				filename: `Unilever - Vrijblijvend advies - ${retailer} - ${category}.xlsx`,
 				content: excelBuffer,
 			},
 		]
@@ -208,7 +220,7 @@ const sendMultipleMails = async (transporter, advice) => {
 				Productomschrijving: val.description,
 				RSP: val.rsp,
 				Adviesprijs: val.advice,
-				Marge: val.margin,
+				Marge: val.margin || "",
 			};
 			if (Object.prototype.hasOwnProperty.call(acc, val.retailer)) {
 				acc[val.retailer].push(newObject);

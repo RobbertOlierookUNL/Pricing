@@ -1,11 +1,15 @@
-import React, {useState, useEffect} from "react";
-import EuroFormat from "../../../EuroFormat";
+import React from "react";
 
 import {unilever_blue, bottle_green} from "../../../../lib/colors";
+import EuroFormat from "../../../EuroFormat";
+import useConfig from "../../../../util/useConfig";
+
+
 
 
 const InfoCard = ({info, even, adviceHigh, handleHighChange, adviceLow, handleLowChange, doRowSelect}) => {
 	const [rowSelect, handleRowSelect] = doRowSelect;
+	const [adviceMode, setAdviceMode] = useConfig("adviceMode");
 
 
 	return (

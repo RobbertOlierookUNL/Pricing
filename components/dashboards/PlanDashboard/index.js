@@ -1,6 +1,5 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 
-import { ActiveConcept, ActiveBrand } from "pages/[category]/plan";
 import { useCategoriesFromCategory, useBrandsFromCategory, useConceptsFromBrand, useEansFromConcept, useDataFromEans } from "util/useSwr-hooks";
 import candyPinkBackground from "res/candy-pink-background.jpg";
 
@@ -19,6 +18,8 @@ import PlanDashboardTitle from "./PlanDashboardTitle";
 import Sider from "../../Sider";
 import View from "../../View";
 import useCategory from "../../../util/useCategory";
+import useConfig from "../../../util/useConfig";
+
 
 
 
@@ -34,8 +35,8 @@ const PlanDashboard = () => {
 
 	const category = useCategory();
 
-	const [activeConcept, setActiveConcept] = useContext(ActiveConcept);
-	const [activeBrand, setActiveBrand] = useContext(ActiveBrand);
+	const [activeBrand, setActiveBrand] = useConfig("lastActiveBrand-"+category);
+	const [activeConcept, setActiveConcept] = useConfig("lastActiveConcept-"+category+activeBrand);
 	const [{nextStep, advice}, adviceDispatch] = useStore();
 
 

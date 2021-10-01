@@ -1,30 +1,37 @@
 import React, {useContext, useState, useEffect} from "react";
 
+import {makeRetailSalesPrice, distanceMaker} from "util/functions";
+import useRetailerSorter from "util/useRetailerSorter";
+
+import { RetailerMode } from "../../../../pages/[category]/plan";
 import InfoCard from "./InfoCard";
 import PriceCard from "./PriceCard";
-import useRetailerSorter from "util/useRetailerSorter";
-import { RetailerMode } from "../../../../pages/[category]/plan";
-import {makeRetailSalesPrice, distanceMaker} from "util/functions";
+import useConfig from "../../../../util/useConfig";
+
 
 
 
 const TableRow = ({entry, even, headerSelections, isAlreadyInAdvice, isInAdviceStore, doSelectAll}) => {
 	const {prices, ...info} = entry;
-	const [retailerMode] = useContext(RetailerMode);
+	const [retailerMode] = useConfig("retailerMode");
+
 	const {sortedData} = useRetailerSorter(prices, retailerMode);
+	const [adviceMode] = useConfig("adviceMode");
+
 	const [adviceHigh, setAdviceHigh] = useState(info?.defaultAdviceHigh || 0);
 	const [adviceLow, setAdviceLow] = useState(info?.defaultAdviceLow || 0);
 
 	const {value, done, execute} = doSelectAll;
 
 	//// TODO: Make dynamic
-	const isAhListed = sortedData.some(e => e.retailer === "AH" && e.rsp > 0);
-	const isJumboListed = sortedData.some(e => e.retailer === "Jumbo L" && e.rsp > 0);
-	let defaultValue = (isAhListed && isJumboListed);
+	// const isAhListed = sortedData.some(e => e.retailer === "AH" && e.rsp > 0);
+	// const isJumboListed = sortedData.some(e => e.retailer === "Jumbo L" && e.rsp > 0);
+	// let defaultValue = (isAhListed && isJumboListed);
+	let defaultValue = false;
 	const [rowSelect, setRowSelect] = useState(defaultValue);
 
 
-	console.log({sortedData, isAhListed});
+	// console.log({sortedData, isAhListed});
 
 	useEffect(() => {
 		if ((value !== "unset") && (done === false)) {
@@ -34,11 +41,21 @@ const TableRow = ({entry, even, headerSelections, isAlreadyInAdvice, isInAdviceS
 	}, [done]);
 
 
-
 	useEffect(() => {
 		setAdviceHigh(info.defaultAdviceHigh);
 		setAdviceLow(info.defaultAdviceLow);
 	}, [info?.defaultAdviceLow, info?.defaultAdviceHigh]);
+
+	useEffect(() => {
+	  if (adviceMode === "opportune") {
+	  	setAdviceHigh(info?.defaultAdviceHigh || 0);
+			setAdviceLow(info?.defaultAdviceLow || 0);
+	  }
+		if (adviceMode === "CAP") {
+			setAdviceHigh(info?.CAP_H || 0);
+			setAdviceLow(info?.CAP_L || 0);
+		}
+	}, [adviceMode]);
 
 	const handleHighChange = e => {
 		setAdviceHigh(e.floatValue);

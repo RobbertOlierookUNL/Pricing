@@ -3,9 +3,21 @@ export const GRAB_ADVICE = "ADVICE_STORE/GRAB_ADVICE";
 export const NEXT_STEP = "ADVICE_STORE/NEXT_STEP";
 export const COLLECT_CONCEPT = "ADVICE_STORE/COLLECT_CONCEPT";
 
-export const initialState = {
-	grabAdvice: false, advice: {}
+export const UPDATE_CONFIG = "CONFIG/UPDATE_CONFIG";
+
+const defaultConfig = {
+	adviceMode: "opportune",
 };
+
+export const initialState = {
+	grabAdvice: false, advice: {}, config: defaultConfig
+};
+
+export const updateConfig = (option, value) => ({
+	type: UPDATE_CONFIG,
+	option,
+	value,
+});
 
 export const setConcept = (category, brand, concept) => ({
 	type: SET_CONCEPT,
@@ -45,7 +57,8 @@ export const adviceStoreReducer = (state, action) => {
 						}
 					}
 				}
-			}
+			},
+			config: {...state.config}
 		};
 	case GRAB_ADVICE:
 		return {...state, tempArr: [], grabAdvice: true};
@@ -53,6 +66,8 @@ export const adviceStoreReducer = (state, action) => {
 		return {...state, grabAdvice: false, nextStep: true};
 	case COLLECT_CONCEPT:
 		return {...state, tempArr: [...state.tempArr, action.value]};
+	case UPDATE_CONFIG:
+		return {...state, config: {...state.config, [action.option]: action.value }};
 	default:
 		throw new Error();
 	}

@@ -1,10 +1,12 @@
 import React, { useContext } from "react";
 
-import { ActiveBrand, ActiveConcept } from "../../../../pages/[category]/plan";
+// import { ActiveBrand, ActiveConcept } from "../../../../pages/[category]/plan";
 import { useStore } from "../../../../lib/Store";
 import SkeletonRows from "./SkeletonRows";
 import TableRow from "./TableRow";
 import useCategory from "../../../../util/useCategory";
+import useConfig from "../../../../util/useConfig";
+
 
 
 
@@ -15,9 +17,13 @@ import useCategory from "../../../../util/useCategory";
 const TableBody = ({data, loadingState, errorState, headerSelections, doSelectAll}) => {
 	const [state] = useStore();
 	const {advice} = state;
-	const [activeConcept] = useContext(ActiveConcept);
-	const [activeBrand] = useContext(ActiveBrand);
 	const category = useCategory();
+	const [activeBrand, setActiveBrand] = useConfig("lastActiveBrand-"+category);
+	const [activeConcept, setActiveConcept] = useConfig("lastActiveConcept-"+category+activeBrand);
+
+
+	// const [activeConcept] = useContext(ActiveConcept);
+	// const [activeBrand] = useContext(ActiveBrand);
 	const isInAdviceStore = !!advice?.[category]?.[activeBrand]?.[activeConcept]?.data[0];
 	const getAdviceData = () => {
 		if (isInAdviceStore) {

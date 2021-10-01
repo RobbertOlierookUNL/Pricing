@@ -18,13 +18,15 @@ const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections, isAl
 	const [{grabAdvice, advice: advices}, adviceDispatch] = useStore();
 	const [retailerSelect, capSelect] = headerSelections;
 
-	const inAdvice = isInAdviceStore && isAlreadyInAdvice(adviceStub.ean, price.retailer);
-	const adviceButNotInAdvice = isInAdviceStore && !isAlreadyInAdvice(adviceStub.ean, price.retailer);
+	const thisIsAlreadyInAdvice = isAlreadyInAdvice(adviceStub.ean, price.retailer);
+
+	const inAdvice = isInAdviceStore && thisIsAlreadyInAdvice;
+	const adviceButNotInAdvice = isInAdviceStore && !thisIsAlreadyInAdvice;
 
 
 	const couldBeAdviced = price.rsp && (price.rsp < advice);
 
-	const [localState, setLocalState] = useState(!adviceButNotInAdvice && couldBeAdviced);
+	const [localState, setLocalState] = useState(false);
 
 	const columnSelect = retailerSelect[price.retailer];
 	const selectedForAdvice = couldBeAdviced && localState;
@@ -46,6 +48,12 @@ const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections, isAl
 	useEffect(() => {
 		setLocalState(columnSelect);
 	}, [columnSelect]);
+
+	useEffect(() => {
+		if (thisIsAlreadyInAdvice) {
+			setLocalState(true);
+		}
+	}, [thisIsAlreadyInAdvice]);
 
 
 

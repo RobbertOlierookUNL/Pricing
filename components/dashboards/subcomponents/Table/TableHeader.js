@@ -1,24 +1,24 @@
-import React, {useContext} from "react";
+import React from "react";
 
 import useRetailerSorter from "util/useRetailerSorter";
 
-import { RetailerMode } from "../../../../pages/[category]/plan";
 import {ballet_pink} from "../../../../lib/colors";
 import TableCapHeader from "./TableCapHeader";
-import TableOptions from "./TableOptions";
 import TableRetailerHeader from "./TableRetailerHeader";
+import useConfig from "../../../../util/useConfig";
+
 
 
 
 
 
 const TableHeader = ({data, doCapSelect, doRetailerSelect}) => {
-	const [retailerMode] = useContext(RetailerMode);
+	const [retailerMode] = useConfig("retailerMode");
 	const {sortedData, caphCount, caplCount, capoCount} = useRetailerSorter(data, retailerMode);
 	return (
 		<div>
 			{/* <TableOptions/> */}
-			<TableCapHeader active={!!(caphCount || caplCount)} doCapSelect={doCapSelect} caphCount={caphCount} caplCount={caplCount} capoCount={capoCount} />
+			<TableCapHeader doCapSelect={doCapSelect} caphCount={caphCount} caplCount={caplCount} capoCount={capoCount} />
 			<TableRetailerHeader headers={sortedData} doRetailerSelect={doRetailerSelect} />
 			<style jsx>{`
 				background-color: ${ballet_pink.color};
