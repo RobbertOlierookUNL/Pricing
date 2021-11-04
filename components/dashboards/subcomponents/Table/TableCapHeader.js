@@ -23,17 +23,17 @@ const TableCapHeader = ({caphCount, capoCount, caplCount, doCapSelect}) => {
 	return (
 		<div>
 			<TableOptions/>
-			<div className={`caph clickable visible-cap ${capSelect.capH ? "" : "deselect"}`} onClick={() => handleCapSelect("capH")()}>CAP H</div>
+			{caphCount ? <div className={`caph clickable visible-cap ${capSelect.capH ? "" : "deselect"}`} onClick={() => handleCapSelect("capH")()}>CAP H</div> : <></>}
 			{capoCount ? <div className="capo" onClick={() => handleCapSelect("capO")()}/> : <></>}
-			<div className={`capl clickable visible-cap ${capSelect.capL ? "" : "deselect"}`} onClick={() => handleCapSelect("capL")()}>CAP L</div>
+			{caplCount ? <div className={`capl clickable visible-cap ${capSelect.capL ? "" : "deselect"}`} onClick={() => handleCapSelect("capL")()}>CAP L</div> : <></>}
 			<style jsx>{`
 				width: 100%;
 				display: inline-grid;
 				height: 16px;
 				grid-template-columns: 250px
-															[start-caph] repeat(${caphCount}, minmax(58px, 1fr))
+															${caphCount ? `[start-caph] repeat(${caphCount}, minmax(58px, 1fr))` : ""}
 															${capoCount ? `[start-capo] repeat(${capoCount}, minmax(58px, 1fr))` : ""}
-															[start-capl] repeat(${caplCount}, minmax(58px, 1fr));
+															${caplCount ? `[start-capl] repeat(${caplCount}, minmax(58px, 1fr))` : ""};
 
 				.caph {
 					grid-column: start-caph / span ${caphCount};

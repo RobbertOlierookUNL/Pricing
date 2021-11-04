@@ -1,25 +1,23 @@
-import React, {useContext, useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 
-import {makeRetailSalesPrice, distanceMaker} from "util/functions";
 import useRetailerSorter from "util/useRetailerSorter";
 
-import { RetailerMode } from "../../../../pages/[category]/plan";
 import InfoCard from "./InfoCard";
 import PriceCard from "./PriceCard";
+import useAdvicePrices from "../../../../util/useAdvicePrices";
 import useConfig from "../../../../util/useConfig";
 
 
 
 
-const TableRow = ({entry, even, headerSelections, isAlreadyInAdvice, isInAdviceStore, doSelectAll}) => {
+
+
+
+const TableRow = ({entry, even, headerSelections, isAlreadyInAdvice, doSelectAll}) => {
 	const {prices, ...info} = entry;
 	const [retailerMode] = useConfig("retailerMode");
-
+	const {adviceHigh, handleHighChange, adviceLow, handleLowChange} = useAdvicePrices(info);
 	const {sortedData} = useRetailerSorter(prices, retailerMode);
-	const [adviceMode] = useConfig("adviceMode");
-
-	const [adviceHigh, setAdviceHigh] = useState(info?.defaultAdviceHigh || 0);
-	const [adviceLow, setAdviceLow] = useState(info?.defaultAdviceLow || 0);
 
 	const {value, done, execute} = doSelectAll;
 
@@ -30,9 +28,6 @@ const TableRow = ({entry, even, headerSelections, isAlreadyInAdvice, isInAdviceS
 	let defaultValue = false;
 	const [rowSelect, setRowSelect] = useState(defaultValue);
 
-
-	// console.log({sortedData, isAhListed});
-
 	useEffect(() => {
 		if ((value !== "unset") && (done === false)) {
 			execute();
@@ -41,36 +36,9 @@ const TableRow = ({entry, even, headerSelections, isAlreadyInAdvice, isInAdviceS
 	}, [done]);
 
 
-	useEffect(() => {
-		setAdviceHigh(info.defaultAdviceHigh);
-		setAdviceLow(info.defaultAdviceLow);
-	}, [info?.defaultAdviceLow, info?.defaultAdviceHigh]);
-
-	useEffect(() => {
-	  if (adviceMode === "opportune") {
-	  	setAdviceHigh(info?.defaultAdviceHigh || 0);
-			setAdviceLow(info?.defaultAdviceLow || 0);
-	  }
-		if (adviceMode === "CAP") {
-			setAdviceHigh(info?.CAP_H || 0);
-			setAdviceLow(info?.CAP_L || 0);
-		}
-	}, [adviceMode]);
-
-	const handleHighChange = e => {
-		setAdviceHigh(e.floatValue);
-		setAdviceLow(false);
-	};
-	const handleLowChange = e => {
-		setAdviceLow(e.floatValue);
-	};
 	const handleRowSelect = () => {
-		console.log({rowSelect});
 		setRowSelect(!rowSelect);
 	};
-	const distance = makeRetailSalesPrice(distanceMaker(adviceHigh));
-
-	const currentLow = adviceLow || distance;
 
 	return (
 		<div>
@@ -80,18 +48,17 @@ const TableRow = ({entry, even, headerSelections, isAlreadyInAdvice, isInAdviceS
 				doRowSelect={[rowSelect, handleRowSelect]}
 				handleHighChange={handleHighChange}
 				handleLowChange={handleLowChange}
-				adviceLow={currentLow}
+				adviceLow={adviceLow}
 				adviceHigh={adviceHigh}/>
 			{sortedData.map(price => {
-				const adviceStub = {ean: info.EAN_CE, description: info.Artikelomschrijving};
+				const adviceStub = {ean: info.EAN_CE, description: info.Artikelomschrijving, nasa: info.NASA};
 				return (
 					<PriceCard
 						key={price.retailer}
 						adviceStub={adviceStub}
 						price={price}
-						advice={price.cap === "H" ? adviceHigh : currentLow}
+						advice={price.cap === "H" ? adviceHigh : adviceLow}
 						isAlreadyInAdvice={isAlreadyInAdvice}
-						isInAdviceStore={isInAdviceStore}
 						rowSelect={rowSelect}
 						headerSelections={headerSelections}/>
 

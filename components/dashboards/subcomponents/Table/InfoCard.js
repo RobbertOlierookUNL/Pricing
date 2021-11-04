@@ -9,7 +9,6 @@ import useConfig from "../../../../util/useConfig";
 
 const InfoCard = ({info, even, adviceHigh, handleHighChange, adviceLow, handleLowChange, doRowSelect}) => {
 	const [rowSelect, handleRowSelect] = doRowSelect;
-	const [adviceMode, setAdviceMode] = useConfig("adviceMode");
 
 
 	return (
@@ -17,10 +16,10 @@ const InfoCard = ({info, even, adviceHigh, handleHighChange, adviceLow, handleLo
 			<div className="description clickable" onClick={handleRowSelect}>{info.Artikelomschrijving}</div>
 			<div className="caph clickable" onClick={handleRowSelect}><EuroFormat value={info.CAP_H}/></div>
 			<div className="clickzone clickable" onClick={handleRowSelect}/>
-			<div className="adviceh"><EuroFormat value={adviceHigh} onValueChange={handleHighChange} displayType="input" /></div>
+			<div className="adviceh"><EuroFormat value={adviceHigh} onValueChange={handleHighChange} displayType="input" height="12px"/></div>
 			<div className="ean clickable" onClick={handleRowSelect}>{info.EAN_CE}</div>
 			<div className="capl clickable" onClick={handleRowSelect}><EuroFormat value={info.CAP_L}/></div>
-			<div className="advicel"><EuroFormat value={adviceLow} onValueChange={handleLowChange} displayType="input"/></div>
+			<div className="advicel"><EuroFormat value={adviceLow} onValueChange={handleLowChange} displayType="input" height="12px"/></div>
 			<style jsx>{`
 				.info-grid {
 					padding: 2px;

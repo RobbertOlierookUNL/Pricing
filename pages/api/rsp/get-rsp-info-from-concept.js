@@ -1,58 +1,45 @@
 
+import { allBrandsText, allConceptsFromBrandText } from "../../../lib/config";
 import { getAdvicePrices, getDateStrings } from "../../../util/functions";
 import { query } from "../../../lib/db";
-
-//
-// const getNasa = async ean => {
-// 	const nasa = await query(/* sql */`
-// 		SELECT artikel_code_ah_nasa_bb FROM rsp_dashboard_basisbestand
-// 		WHERE ean_ce_bb = ?
-// `, ean
-// 	);
-// 	return nasa?.[0]?.artikel_code_ah_nasa_bb;
-// };
-
-
 
 
 
 const handler = async (req, res) => {
-	const { eans: unparsedEan, mode, category: unparsedCategory } = req.query;
+	const { category: unparsed, brand, concept } = req.query;
 	const {todayString, yesterdayString, lastWeekString, lastMonthString, firstDayString} = getDateStrings();
-	if ((unparsedEan && unparsedEan !== "undefined" ) || mode !== "ean") {
+	const allMode = brand === allBrandsText;
+	const allFromBrandMode = concept === allConceptsFromBrandText(brand);
+	if (concept && concept !== "undefined") {
+
 		try {
-
-			const category = unparsedCategory ? JSON.parse(unparsedCategory) : [];
-			let eans;
-			const nasaMap = {};
-
-			if (mode === "ean") {
-				eans = unparsedEan ? JSON.parse(unparsedEan) : [];
-				const results = await query(/* sql */`
-					SELECT ean_ce_bb, artikel_code_ah_nasa_bb FROM rsp_dashboard_basisbestand
-					WHERE ean_ce_bb IN (${eans.map(() => "?").toString()})
-			`, [...eans]
-				);
-				for (const o of results) {
-					nasaMap[o.ean_ce_bb] = o.artikel_code_ah_nasa_bb;
-				}
-			} else {
-				const results = await query(/* sql */`
-				SELECT DISTINCT ean_ce_bb, artikel_code_ah_nasa_bb FROM rsp_dashboard_basisbestand
-				WHERE cluster_bb IN (${category.map(() => "?").toString()})
-				`, [...category]);
-				eans = results.map(o => o.ean_ce_bb);
-				for (const o of results) {
-					nasaMap[o.ean_ce_bb] = o.artikel_code_ah_nasa_bb;
-				}
-			}
-
-			console.log({nasaMap});
-
-
-
+			const category = unparsed ? JSON.parse(unparsed) : [];
 
 			if (req.method === "GET") {
+				let results;
+				if (allMode) {
+					results = await query(/* sql */`
+					SELECT DISTINCT ean_ce_bb, artikel_code_ah_nasa_bb FROM rsp_dashboard_basisbestand
+					WHERE cluster_bb IN (${category.map(() => "?").toString()})
+			`, [...category]);
+				} else if (allFromBrandMode){
+					results = await query(/* sql */`
+					SELECT DISTINCT ean_ce_bb, artikel_code_ah_nasa_bb FROM rsp_dashboard_basisbestand
+					WHERE brand_ul_bb = ? AND cluster_bb IN (${category.map(() => "?").toString()})
+			`, [brand, ...category]);
+				} else {
+					results = await query(/* sql */`
+					SELECT DISTINCT ean_ce_bb, artikel_code_ah_nasa_bb FROM rsp_dashboard_basisbestand
+					WHERE concept_bb = ? AND brand_ul_bb = ? AND cluster_bb IN (${category.map(() => "?").toString()})
+			`, [concept, brand, ...category]
+					);
+				}
+			 const eans = results.map(o => o.ean_ce_bb);
+			 const nasaMap = {};
+			 for (const o of results) {
+				 nasaMap[o.ean_ce_bb] = o.artikel_code_ah_nasa_bb;
+			 }
+
 				const retailers = await query(/* sql */`
 					SELECT * FROM pricing_tool_retailers
 			`,);
@@ -65,7 +52,7 @@ const handler = async (req, res) => {
 					return acc;
 				}, {});
 
-				const results = await query(/* sql */`
+				const rspInfo = await query(/* sql */`
         SELECT Artikelomschrijving, Account, Delta, ${todayString}, ${yesterdayString}, ${lastWeekString}, ${lastMonthString}, ${firstDayString}, EAN, Referentie_EAN, CAP_Hoog, CAP_Laag FROM rsp_dashboard_rsp_tijd
         WHERE EAN IN (${eans.map(() => "?").toString()})
     `, eans
@@ -88,7 +75,7 @@ const handler = async (req, res) => {
 					return acc;
 				}, {});
 
-				const reducedResults = results.reduce((acc, val) => {
+				const reducedResults = rspInfo.reduce((acc, val) => {
 					const {Delta: delta, Account: account, [todayString]: rsp, [yesterdayString]: dayRsp, [lastWeekString]: weekRsp, [lastMonthString]: monthRsp, [firstDayString]: ytdRsp, EAN: EAN_CE, CAP_Hoog: CAP_H, CAP_Laag: CAP_L, Referentie_EAN, ...others} = val;
 
 					const index = showRetailer.findIndex(el => el.retailer === account);

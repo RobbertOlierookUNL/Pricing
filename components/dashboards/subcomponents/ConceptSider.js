@@ -1,30 +1,54 @@
 import React from "react";
 
+import { allBrandsText, allConceptsFromBrandText } from "../../../lib/config";
 import {bottle_green} from "../../../lib/colors";
 import List from "./List";
 import useCategory from "../../../util/useCategory";
 import useConfig from "../../../util/useConfig";
+import useOverflowDetector from "../../../util/useOverflowDetector";
 
 
-const ConceptSider = ({brands, concepts}) => {
+
+
+const ConceptSider = ({brands, brandsIsLoading, concepts, conceptsIsLoading}) => {
 	// const [activeConcept, setActiveConcept] = useContext(ActiveConcept);
 	// const [activeBrand, setActiveBrand] = useContext(ActiveBrand);
 	const category = useCategory();
-	const [activeBrand, setActiveBrand] = useConfig("lastActiveBrand-"+category);
-	const [activeConcept, setActiveConcept] = useConfig("lastActiveConcept-"+category+activeBrand);
+	const [activeBrand, setActiveBrand] = useConfig("lastActiveBrand");
+	const [activeConcept, setActiveConcept] = useConfig("lastActiveConcept");
 
-	const handleClickConcept = (item) => () => setActiveConcept(item);
-	const handleClickBrand = (item) => () => setActiveBrand(item);
+	const [conceptOverflowRef, conceptHasOverflow] = useOverflowDetector();
+	const [brandOverflowRef, brandHasOverflow] = useOverflowDetector();
 
- 	const conceptSetter = () => setActiveConcept(concepts?.[0]);
-	const brandSetter = () => setActiveBrand(brands?.[0]);
+	const brand = activeBrand?.[category];
+	const concept = activeConcept?.[category]?.[brand];
+
+	const defaultConcept = brand === allBrandsText ? allBrandsText : concepts?.[0];
+	const defaultBrand = brands?.[0];
+
+	const handleSetActiveBrand = value => setActiveBrand({...activeBrand, [category]: value});
+	const handleSetActiveConcept = value => setActiveConcept({...activeConcept, [category]: {...activeConcept?.[category], [brand]: value}});
+
+	const handleClickConcept = (item) => () => handleSetActiveConcept(item);
+	const handleClickBrand = (item) => () => handleSetActiveBrand(item);
+
+ 	const conceptSetter = () => handleSetActiveConcept(defaultConcept);
+	const brandSetter = () => handleSetActiveBrand(defaultBrand);
+
+	const brandItems = !brandsIsLoading && Array.isArray(brands) && [allBrandsText, ...brands];
+	const conceptItems = brand === allBrandsText ? [allBrandsText] : !conceptsIsLoading && Array.isArray(concepts) && [allConceptsFromBrandText(brand), ...concepts];
+	console.log({brands, concepts});
 
 	return (
 		<>
-			<div className="sider unl-blue shadow">
-				<div className="absolute-center container">
-					{<List items={brands} activeItem={activeBrand} handleClick={handleClickBrand} setter={brandSetter} size="s"/>}
-					{<List items={concepts} activeItem={activeConcept} handleClick={handleClickConcept} setter={conceptSetter} size="m"/>}
+			<div className="sider shadow">
+				<div className="container first-sider unl-blue" ref={brandOverflowRef}>
+					{<List items={brandItems} activeItem={brand} handleClick={handleClickBrand} setter={brandSetter} size="s"/>}
+				</div>
+				<div className="container second-sider" ref={conceptOverflowRef}>
+
+					{<List items={conceptItems} activeItem={concept} handleClick={handleClickConcept} setter={conceptSetter} size="m"/>}
+
 				</div>
 
 			</div>
@@ -33,7 +57,6 @@ const ConceptSider = ({brands, concepts}) => {
 				width: 400px;
 				height: 100vh;
 				position: fixed;
-				overflow: auto;
 				right: -300px;
 				top: 0;
 				transition: right 250ms linear;
@@ -42,20 +65,27 @@ const ConceptSider = ({brands, concepts}) => {
 			.sider:hover {
 				right: 0;
 			}
-			.sider::before {
-				content: "";
-				position: absolute;
+
+			.first-sider {
+				width: 180px;
+				left: 0;
+				align-items: ${brandHasOverflow ? "start" : "center"};
+
+			}
+			.second-sider {
 				background-color: ${bottle_green.color};
 				right: 0;
-				top: 0;
-				height: 100%;
 				width: 220px;
+				align-items: ${conceptHasOverflow ? "start" : "center"};
+
 			}
 			.container {
-				width: 100%;
-				display: inline-flex;
-				align-items: center;
-				justify-content: space-around;
+				height: 100%;
+				min-height: min-content;
+				position: absolute;
+				overflow: auto;
+				display: flex;
+				justify-content: center;
 
 			}
 		`}</style>

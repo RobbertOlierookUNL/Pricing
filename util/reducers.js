@@ -2,11 +2,25 @@ export const SET_CONCEPT = "ADVICE_STORE/SET_CONCEPT";
 export const GRAB_ADVICE = "ADVICE_STORE/GRAB_ADVICE";
 export const NEXT_STEP = "ADVICE_STORE/NEXT_STEP";
 export const COLLECT_CONCEPT = "ADVICE_STORE/COLLECT_CONCEPT";
+export const UPDATE_ADVICE = "ADVICE_STORE/UPDATE_ADVICE";
+export const DELETE_ADVICE = "ADVICE_STORE/DELETE_ADVICE";
+export const DELETE_ADVICE_RETAILER = "ADVICE_STORE/DELETE_ADVICE_RETAILER";
+export const DELETE_ADVICE_CATEGORY = "ADVICE_STORE/DELETE_ADVICE_CATEGORY";
+export const CLEAR_ADVICE = "ADVICE_STORE/CLEAR_ADVICE";
+
 
 export const UPDATE_CONFIG = "CONFIG/UPDATE_CONFIG";
 
 const defaultConfig = {
-	adviceMode: "opportune",
+	retailerMode: false,
+	deltaMode: false,
+	adviceMode: "directOpportunities",
+	intervalMode: "weekRsp",
+	infoMode: "relativePrice",
+	adviceInfo: {},
+	lastActiveBrand: {},
+	lastActiveConcept: {},
+	lastAdviceValue: {}
 };
 
 export const initialState = {
@@ -39,33 +53,131 @@ export const collectConcept = (value) => ({
 	value
 });
 
+export const updateAdvice = ({property, value, category, brand, concept, ean, retailer}) => ({
+	type: UPDATE_ADVICE,
+	property,
+	value,
+	category,
+	brand,
+	concept,
+	ean,
+	retailer
+});
+
+export const deleteAdvice = ({property, value, category, brand, concept, ean, retailer}) => ({
+	type: DELETE_ADVICE,
+	property,
+	value,
+	category,
+	brand,
+	concept,
+	ean,
+	retailer
+});
+
+export const deleteAdviceRetailerFromCategory = ({category, retailer}) => ({
+	type: DELETE_ADVICE_RETAILER,
+	category,
+	retailer
+});
+
+export const deleteAdviceCategory = ({category}) => ({
+	type: DELETE_ADVICE_CATEGORY,
+	category
+});
+
+export const clearAdvice = () => ({
+	type: CLEAR_ADVICE
+});
+
+
 
 export const adviceStoreReducer = (state, action) => {
 	switch (action.type) {
-	case SET_CONCEPT:
+	case SET_CONCEPT: {
+		const newAdvice =  {
+			...state.advice?.[action.category],
+		};
+		for (var singleAdvice of state.tempArr) {
+			newAdvice[singleAdvice.ean] = {};
+			newAdvice[singleAdvice.ean][singleAdvice.retailer] = {...singleAdvice, brand: action.brand, concept: action.concept};
+		}
 		return {
 			grabAdvice: false,
 			nextStep: false,
 			advice: {
 				...state.advice,
-				[action.category]: {
-					...state.advice?.[action.category],
-					[action.brand]: {
-						...state.advice?.[action.category]?.[action.brand],
-						[action.concept]: {
-							data: state.tempArr
-						}
-					}
-				}
+				[action.category]: newAdvice
 			},
 			config: {...state.config}
 		};
+	}
 	case GRAB_ADVICE:
 		return {...state, tempArr: [], grabAdvice: true};
 	case NEXT_STEP:
 		return {...state, grabAdvice: false, nextStep: true};
 	case COLLECT_CONCEPT:
 		return {...state, tempArr: [...state.tempArr, action.value]};
+	case UPDATE_ADVICE: {
+		const data  = state?.advice?.[action.category]?.[action.brand]?.[action.concept]?.data;
+		const findIt = data.findIndex(el => ((el.retailer === action.retailer) && (el.ean === action.ean)));
+		const changeIt = (findIt > -1) && {...data[findIt], [action.property]: action.value};
+		const newData = [...data];
+		newData[findIt] = changeIt;
+		return changeIt ? {...state, advice: {
+			...state.advice,
+			[action.category]: {
+				...state.advice?.[action.category],
+				[action.brand]: {
+					...state.advice?.[action.category]?.[action.brand],
+					[action.concept]: {
+						data: newData
+					}
+				}
+			}
+		}}
+			:
+			state;
+	}
+	case DELETE_ADVICE: {
+		const data  = state?.advice?.[action.category]?.[action.brand]?.[action.concept]?.data;
+		const newData = data.filter(el => !((el.retailer === action.retailer) && (el.ean === action.ean)));
+		return {...state, advice: {
+			...state.advice,
+			[action.category]: {
+				...state.advice?.[action.category],
+				[action.brand]: {
+					...state.advice?.[action.category]?.[action.brand],
+					[action.concept]: {
+						data: newData
+					}
+				}
+			}
+		}};
+
+	}
+	case DELETE_ADVICE_RETAILER: {
+		const filterRetailerAway = data => data.filter(el => (el.retailer !== action.retailer));
+		const newAdvice = {...state.advice};
+		const category = action.category;
+
+		const brands = Object.keys(state.advice[category]);
+		for (const brand of brands) {
+			const concepts = Object.keys(state.advice[category][brand]);
+			for (const concept of concepts) {
+				newAdvice[category][brand][concept].data = filterRetailerAway(state.advice[category][brand][concept].data);
+			}
+		}
+		return {...state, advice: newAdvice};
+	}
+	case DELETE_ADVICE_CATEGORY: {
+		const newState = {...state, advice: {...state.advice}};
+		delete newState.advice[action.category];
+		return newState;
+	}
+	case CLEAR_ADVICE: {
+		return {...state, advice: {}};
+	}
 	case UPDATE_CONFIG:
 		return {...state, config: {...state.config, [action.option]: action.value }};
 	default:

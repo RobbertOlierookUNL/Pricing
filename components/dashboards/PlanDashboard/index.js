@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from "react";
 
-import { useCategoriesFromCategory, useBrandsFromCategory, useConceptsFromBrand, useEansFromConcept, useDataFromEans } from "util/useSwr-hooks";
+import {
+	useCategoriesFromCategory,
+	useBrandsFromCategory,
+	useConceptsFromBrand
+} from "util/useSwr-hooks";
 import candyPinkBackground from "res/candy-pink-background.jpg";
 
+import { allBrandsText } from "../../../lib/config";
 import { setConcept } from "../../../util/reducers";
+import { useDataFromConcept } from "../../../util/useSwr-hooks";
 import { useStore } from "../../../lib/Store";
 import Background from "../../Background";
 import ConceptSider from "../subcomponents/ConceptSider";
@@ -19,6 +25,10 @@ import Sider from "../../Sider";
 import View from "../../View";
 import useCategory from "../../../util/useCategory";
 import useConfig from "../../../util/useConfig";
+import usePrefetcher from "../../../util/usePrefetcher";
+
+
+
 
 
 
@@ -35,33 +45,48 @@ const PlanDashboard = () => {
 
 	const category = useCategory();
 
-	const [activeBrand, setActiveBrand] = useConfig("lastActiveBrand-"+category);
-	const [activeConcept, setActiveConcept] = useConfig("lastActiveConcept-"+category+activeBrand);
+	const [activeBrand, setActiveBrand] = useConfig("lastActiveBrand");
+	const [activeConcept, setActiveConcept] = useConfig("lastActiveConcept");
+
+
+
+	const handleSetActiveBrand = value => setActiveBrand({...activeBrand, [category]: value});
+	const handleSetActiveConcept = value => setActiveConcept({...activeConcept, [category]: {...activeConcept?.[category], [brand]: value}});
+
+
 	const [{nextStep, advice}, adviceDispatch] = useStore();
 
 
 
 	const {categories, categoriesIsLoading, categoriesReturnsError} = useCategoriesFromCategory(category);
 	const {brands, brandsIsLoading, brandsReturnsError} = useBrandsFromCategory(categories);
-	const {concepts, conceptsIsLoading, conceptsReturnsError} = useConceptsFromBrand(categories, activeBrand);
-	const {eans, eansIsLoading, eansReturnsError} = useEansFromConcept(categories, activeBrand, activeConcept);
-	const {data, dataIsLoading, dataReturnsError} = useDataFromEans(eans);
+	const defaultBrand = brands?.[0];
+	const brand = activeBrand?.[category] || defaultBrand;
+	const {concepts, conceptsIsLoading, conceptsReturnsError} = useConceptsFromBrand(categories, brand);
+	const defaultConcept = brand === allBrandsText ? allBrandsText : concepts?.[0];
+	const concept = activeConcept?.[category]?.[brand] || defaultConcept;
+	const {data, dataIsLoading, dataReturnsError} = useDataFromConcept(categories, brand, concept);
+	// const {eans, eansIsLoading, eansReturnsError} = useEansFromConcept(categories, brand, concept);
+	// const mode = brand === allBrandsText ? "getAllFromCategory" : "ean";
+	// const {data, dataIsLoading, dataReturnsError} = useDataFromEans(eans, mode, categories);
 
 
-	const errorState = categoriesReturnsError || brandsReturnsError || conceptsReturnsError || eansReturnsError || dataReturnsError;
-	const loadingState = categoriesIsLoading || brandsIsLoading || conceptsIsLoading || eansIsLoading || dataIsLoading;
 
-	useEffect(() => {
-	  brands && setActiveBrand(brands?.[0]);
-	}, [brands]);
+	const errorState = categoriesReturnsError || brandsReturnsError || conceptsReturnsError || dataReturnsError;
+	const loadingState = categoriesIsLoading || brandsIsLoading || conceptsIsLoading || dataIsLoading;
+	usePrefetcher(loadingState, categories, brand, concept, brands, concepts, data);
 
-	useEffect(() => {
-		concepts && setActiveConcept(concepts?.[0]);
-	}, [concepts]);
+	// useEffect(() => {
+	//   brands && handleSetActiveBrand(defaultBrand);
+	// }, [brands]);
+	//
+	// useEffect(() => {
+	// 	concepts && handleSetActiveConcept(defaultConcept);
+	// }, [concepts]);
 
 	useEffect(() => {
 		if (nextStep) {
-			adviceDispatch(setConcept(category, activeBrand, activeConcept));
+			adviceDispatch(setConcept(category, brand, concept));
 		}
 	}, [nextStep]);
 
@@ -73,7 +98,7 @@ const PlanDashboard = () => {
 		setSelectAllState({...selectAllState, done: true});
 	};
 
-	console.log({category, categories, brands, concepts, eans, data, advice});
+	console.log({category, categories, brands, concepts, data, advice});
 	return (
 		<Background image={candyPinkBackground}>
 			<Sider title="Pricing Tool"/>
@@ -94,7 +119,7 @@ const PlanDashboard = () => {
 				</DashboardContainer>
 			</View>
 
-			<ConceptSider brands={brands} concepts={concepts}/>
+			<ConceptSider brands={brands} brandsIsLoading={brandsIsLoading} concepts={concepts} conceptsIsLoading={conceptsIsLoading}/>
 		</Background>
 	);
 };

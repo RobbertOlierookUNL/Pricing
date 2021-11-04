@@ -5,7 +5,7 @@ import { unilever_blue } from "../../../../lib/colors";
 
 
 
-const TableOption = ({onClick, children}) => {
+const TableOption = ({onClick, children, span = "auto"}) => {
 	return (
 		<div className="option">
 			<div onClick={onClick}>
@@ -15,6 +15,7 @@ const TableOption = ({onClick, children}) => {
 
 				.option {
 					padding: 1px;
+					grid-column: auto / ${span};
 				}
 				.option > div {
 					/* position: relative; */

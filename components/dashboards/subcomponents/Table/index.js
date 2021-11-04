@@ -9,17 +9,17 @@ const Table = ({data, loadingState, errorState, doSelectAll}) => {
 	const [capSelect, setCapSelect] = useState(defaultCapSelect);
 	const [retailerSelect, setRetailerSelect] = useState({});
 	const {value, done, execute} = doSelectAll;
-
-	useEffect(() => {
-		if (data?.headers) {
-			const tempObj = {};
-			for (const header of data.headers) {
-				tempObj[header.retailer] = header.cap === "O" ? false : false;
-			}
-			setRetailerSelect(tempObj);
-			setCapSelect(defaultCapSelect);
-		}
-	}, [data?.headers?.[0]?.retailer]);
+	// 
+	// useEffect(() => {
+	// 	if (data?.headers) {
+	// 		const tempObj = {};
+	// 		for (const header of data.headers) {
+	// 			tempObj[header.retailer] = header.cap === "O" ? false : false;
+	// 		}
+	// 		setRetailerSelect(tempObj);
+	// 		setCapSelect(defaultCapSelect);
+	// 	}
+	// }, [data?.headers?.[0]?.retailer]);
 
 	useEffect(() => {
 		if ((data?.headers) && (value !== "unset") && (done === false)) {
