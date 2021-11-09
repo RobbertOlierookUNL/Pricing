@@ -9,6 +9,7 @@ export const DELETE_ADVICE_CATEGORY = "ADVICE_STORE/DELETE_ADVICE_CATEGORY";
 export const CLEAR_ADVICE = "ADVICE_STORE/CLEAR_ADVICE";
 
 
+
 export const UPDATE_CONFIG = "CONFIG/UPDATE_CONFIG";
 
 const defaultConfig = {
@@ -20,7 +21,8 @@ const defaultConfig = {
 	adviceInfo: {},
 	lastActiveBrand: {},
 	lastActiveConcept: {},
-	lastAdviceValue: {}
+	lastAdviceValue: {},
+	prefetch: false
 };
 
 export const initialState = {
@@ -98,8 +100,12 @@ export const adviceStoreReducer = (state, action) => {
 		const newAdvice =  {
 			...state.advice?.[action.category],
 		};
+		const alreadyEmptied = [];
 		for (var singleAdvice of state.tempArr) {
-			newAdvice[singleAdvice.ean] = {};
+			if (!alreadyEmptied.some(e => e === singleAdvice.ean)) {
+				newAdvice[singleAdvice.ean] = {};
+				alreadyEmptied.push(singleAdvice.ean);
+			}
 			newAdvice[singleAdvice.ean][singleAdvice.retailer] = {...singleAdvice, brand: action.brand, concept: action.concept};
 		}
 		return {

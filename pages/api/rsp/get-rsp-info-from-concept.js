@@ -1,13 +1,16 @@
 
 import { allBrandsText, allConceptsFromBrandText } from "../../../lib/config";
-import { getAdvicePrices, getDateStrings } from "../../../util/functions";
 import { query } from "../../../lib/db";
+import getAdvicePrices from "../../../util/api-functions/get-advice-prices";
+import getDateStrings from "../../../util/api-functions/get-date-strings";
+
+
 
 
 
 const handler = async (req, res) => {
 	const { category: unparsed, brand, concept } = req.query;
-	const {todayString, yesterdayString, lastWeekString, lastMonthString, firstDayString} = getDateStrings();
+	const {todayString, yesterdayString, lastTwoDayString, lastFiveDayString, lastWeekString, lastTwoWeekString, lastMonthString, lastTwoMonthString, firstDayString} = getDateStrings();
 	const allMode = brand === allBrandsText;
 	const allFromBrandMode = concept === allConceptsFromBrandText(brand);
 	if (concept && concept !== "undefined") {
@@ -53,7 +56,7 @@ const handler = async (req, res) => {
 				}, {});
 
 				const rspInfo = await query(/* sql */`
-        SELECT Artikelomschrijving, Account, Delta, ${todayString}, ${yesterdayString}, ${lastWeekString}, ${lastMonthString}, ${firstDayString}, EAN, Referentie_EAN, CAP_Hoog, CAP_Laag FROM rsp_dashboard_rsp_tijd
+        SELECT Artikelomschrijving, Account, Delta, ${todayString}, ${yesterdayString}, ${lastTwoDayString}, ${lastFiveDayString}, ${lastWeekString}, ${lastTwoWeekString}, ${lastMonthString}, ${lastTwoMonthString}, ${firstDayString}, EAN, Referentie_EAN, CAP_Hoog, CAP_Laag FROM rsp_dashboard_rsp_tijd
         WHERE EAN IN (${eans.map(() => "?").toString()})
     `, eans
 				);
@@ -76,7 +79,7 @@ const handler = async (req, res) => {
 				}, {});
 
 				const reducedResults = rspInfo.reduce((acc, val) => {
-					const {Delta: delta, Account: account, [todayString]: rsp, [yesterdayString]: dayRsp, [lastWeekString]: weekRsp, [lastMonthString]: monthRsp, [firstDayString]: ytdRsp, EAN: EAN_CE, CAP_Hoog: CAP_H, CAP_Laag: CAP_L, Referentie_EAN, ...others} = val;
+					const {Delta: delta, Account: account, [todayString]: rsp, [yesterdayString]: dayRsp, [lastTwoDayString]: twoDayRsp, [lastFiveDayString]: fiveDayRsp, [lastWeekString]: weekRsp, [lastTwoWeekString]: twoWeekRsp, [lastMonthString]: monthRsp, [lastTwoMonthString]: twoMonthRsp, [firstDayString]: ytdRsp, EAN: EAN_CE, CAP_Hoog: CAP_H, CAP_Laag: CAP_L, Referentie_EAN, ...others} = val;
 
 					const index = showRetailer.findIndex(el => el.retailer === account);
 					if (showRetailer[index]?.found === false) {
@@ -84,10 +87,10 @@ const handler = async (req, res) => {
 					}
 					if (acc.some(e => e.EAN_CE === EAN_CE)) {
 						const entry = acc.find(e => e.EAN_CE === EAN_CE);
-						entry[account] = {rsp, dayRsp, weekRsp, monthRsp, ytdRsp};
+						entry[account] = {rsp, dayRsp, twoDayRsp, fiveDayRsp, weekRsp, twoWeekRsp, monthRsp, twoMonthRsp, ytdRsp};
 					} else {
 						const info = {EAN_CE, CAP_H, CAP_L, Referentie_EAN, ...others};
-						acc.push({...info, [account]: {rsp, dayRsp, weekRsp, monthRsp, ytdRsp}});
+						acc.push({...info, [account]: {rsp, dayRsp, twoDayRsp, fiveDayRsp, weekRsp, twoWeekRsp, monthRsp, twoMonthRsp, ytdRsp}});
 					}
 					return acc;
 				}, []);
@@ -113,7 +116,7 @@ const handler = async (req, res) => {
 						totalVolume += myVolume;
 						prices.push({retailer, ...measurementInfo, volume: myVolume, CAP_H, ...retailerInfo[retailer]});
 					};
-					for (const [retailer, {rsp: price, dayRsp, weekRsp, monthRsp, ytdRsp}] of Object.entries(others)) {
+					for (const [retailer, {rsp: price, dayRsp, twoDayRsp, fiveDayRsp, weekRsp, twoWeekRsp, monthRsp, twoMonthRsp, ytdRsp}] of Object.entries(others)) {
 						if (price && !push) {
 							push = true;
 						}
@@ -134,7 +137,7 @@ const handler = async (req, res) => {
 							priceSetterPrice = price;
 						}
 
-						addVolumePushPrice(retailer, {rsp: price, dayRsp, weekRsp, monthRsp, ytdRsp});
+						addVolumePushPrice(retailer, {rsp: price, dayRsp, twoDayRsp, fiveDayRsp, weekRsp, twoWeekRsp, monthRsp, twoMonthRsp, ytdRsp});
 					}
 					const unpushedRetailers = thisRetailers.reduce((acc, val) => {
 						if (val.found === true) {
@@ -143,7 +146,7 @@ const handler = async (req, res) => {
 						return acc;
 					}, []);
 					for (const ret of unpushedRetailers) {
-						addVolumePushPrice(ret, {price: 0, dayRsp: 0, weekRsp: 0, monthRsp: 0, ytdRsp: 0});
+						addVolumePushPrice(ret, {price: 0, dayRsp: 0, twoDayRsp: 0, fiveDayRsp: 0, weekRsp: 0, twoWeekRsp: 0, monthRsp: 0, twoMonthRsp: 0, ytdRsp: 0});
 					}
 
 					const [defaultAdviceHigh, defaultAdviceLow] = getAdvicePrices(poolCapH, poolCapL, CAP_H, CAP_L, priceSetterPrice);

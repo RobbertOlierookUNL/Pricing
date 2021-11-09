@@ -34,35 +34,22 @@ const AdvicesApp = () => {
 
 
 	const advicePerRetailerAndCategory = {};
-
-	const categories = Object.keys(advice);
-
-
-	for (const category of categories) {
-		const combinedData = [];
-		const brands = Object.keys(advice[category]);
-		for (const brand of brands) {
-			const concepts = Object.keys(advice[category][brand]);
-			for (const concept of concepts) {
-				for (const entry of advice[category][brand][concept].data) {
-					combinedData.push({...entry, concept, brand, category});
+	for (const category of Object.keys(advice)) {
+		const retailerMoveUp = Object.values(advice[category]).reduce((acc, val) => {
+			for (const retailer of Object.keys(val)) {
+				if (Object.prototype.hasOwnProperty.call(acc, retailer)) {
+					acc[retailer].push(val[retailer]);
+				} else {
+					acc[retailer] = [val[retailer]];
 				}
-				// combinedData = [...combinedData, ...advice[category][brand][concept].data];
-			}
-		}
-		console.log({combinedData});
-		const retailerMoveUp = combinedData.reduce((acc, val) => {
-			const newObject = { ...val};
-			if (Object.prototype.hasOwnProperty.call(acc, val.retailer)) {
-				acc[val.retailer].push(newObject);
-			} else {
-				acc[val.retailer] = [newObject];
 			}
 			return acc;
 		}, {});
 		advicePerRetailerAndCategory[category] = retailerMoveUp;
 	}
+
 	console.log({advice, advicePerRetailerAndCategory});
+
 	return (
 		<Background image={candyPinkBackgrund}>
 			<Sider title="Pricing Tool"/>
@@ -71,7 +58,6 @@ const AdvicesApp = () => {
 					<DashboardHeader>
 						<GenericTitle>
 							Adviezen
-
 						</GenericTitle>
 						<div className="close-button">
 							<CloseButton onClick={clear}/>
