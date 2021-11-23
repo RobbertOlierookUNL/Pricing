@@ -1,6 +1,8 @@
 import { distanceMaker, getAvg, makeRetailSalesPrice } from "../functions";
 
-const getAdvicePrices = (poolCapH, poolCapL, capH, capL, priceSetterPrice) => {
+const getAdvicePrices = (poolCapH, poolCapL, capH, priceSetterPrice) => {
+	const capL = makeRetailSalesPrice(distanceMaker(capH));
+
 	const defaultAdviceHigh = {};
 	const defaultAdviceLow = {};
 

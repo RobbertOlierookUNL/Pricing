@@ -20,7 +20,7 @@ function makeSingle(generator) {
 
 			resumeValue = await n.value;
 			if (localNonce !== globalNonce) {
-				console.log("EARLY RETURN");
+				console.log("PREFETCHER | EARLY RETURN");
 				return;
 			}
 		}
@@ -35,37 +35,52 @@ const preFetch = (baseUrl, params) => {
 	return results;
 };
 
-function* preFetchAll(category, allBrands, allConcepts, thisBrand, thisConcept){
-	const concepts = thisBrand === allBrandsText ? allConcepts : [...allConcepts, allConceptsFromBrandText(thisBrand)];
-	for (const concept of concepts) {
-		if (concept != thisConcept) {
-			yield preFetch("rsp/get-rsp-info-from-concept", {category, brand: thisBrand, concept});
-		}
-	}
-	for (const brand of [...allBrands, allBrandsText]) {
-		if (brand != thisBrand) {
-			const concepts = yield preFetch("rsp/get-all-concepts-from-brand", {category, brand});
-			const allConcepts = brand === allBrandsText ? concepts : [...concepts, allConceptsFromBrandText(brand)];
-			for (const concept of allConcepts) {
-				yield preFetch("rsp/get-rsp-info-from-concept", {category, brand, concept});
+function* preFetchAll(doSomething, category, allBrands=[], allConcepts=[], thisBrand, thisConcept, done, cat){
+	if (doSomething) {
+		const concepts = (thisBrand === allBrandsText) ? allConcepts : [...allConcepts, allConceptsFromBrandText(thisBrand)];
+		for (const concept of concepts) {
+			if (concept != thisConcept) {
+				yield preFetch("rsp/get-rsp-info-from-concept", {category, brand: thisBrand, concept, cat});
+				console.log(`PREFETCHER | prefetched ${thisBrand} ${concept}`);
 			}
 		}
+		for (const brand of [...allBrands, allBrandsText]) {
+			if (brand != thisBrand) {
+				const concepts = yield preFetch("rsp/get-all-concepts-from-brand", {category, brand});
+				console.log(`PREFETCHER | prefetched ${brand}`);
+
+				const allConcepts = brand === allBrandsText ? concepts : [...concepts, allConceptsFromBrandText(brand)];
+				for (const concept of allConcepts) {
+					yield preFetch("rsp/get-rsp-info-from-concept", {category, brand, concept, cat});
+					console.log(`PREFETCHER | prefetched ${brand} ${concept}`);
+
+				}
+			}
+		}
+		done.current=true;
+		console.log("PREFETCHER | done");
+
 	}
-	//kan hier iets doen met alles geprefetched
+	else {
+		console.log("PREFETCHER | stop");
+	}
 }
 
 const prefetcher = makeSingle(preFetchAll);
 
 
-const usePrefetcher = (loading, thisCategories, thisBrand, thisConcept, allBrands, allConcepts, data) => {
+const usePrefetcher = (loading, thisCategories, thisBrand, thisConcept, allBrands, allConcepts, data, cat) => {
+	const done = React.useRef(false);
 	React.useEffect(() => {
-		if (!loading && Array.isArray(allBrands) && Array.isArray(allConcepts)) {
+		if (!done.current && !loading && Array.isArray(allBrands) && Array.isArray(allConcepts)) {
 			const category = JSON.stringify(thisCategories);
 			console.log({tag: "prefetcher", data});
-			prefetcher(category, allBrands, allConcepts, thisBrand, thisConcept);
+			prefetcher(true, category, allBrands, allConcepts, thisBrand, thisConcept, done, cat);
 		}
 	}, [loading, Array.isArray(allBrands), Array.isArray(allConcepts)]);
-
+	React.useEffect(() => {
+	  return () => prefetcher(false);
+	}, []);
 };
 
 export default usePrefetcher;

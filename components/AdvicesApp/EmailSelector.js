@@ -3,9 +3,20 @@ import React from "react";
 import useConfig from "../../util/useConfig";
 
 
-const EmailSelector = ({category, retailer}) => {
+const EmailSelector = ({category, retailer, data}) => {
 	const [info, setInfo] = useConfig("adviceInfo");
-
+	const {
+		email: kamEmail,
+		sdEmail,
+		first_name,
+		sdFirstName,
+		last_name,
+		sdLastName
+	} = data.find(e =>
+		(e.category === category)
+		&&
+		(e.retailer === retailer)
+	);
 
 	const handleNameChange = e => {
 		setInfo({...info, [category]: {...info?.[category], [retailer]: {...info?.[category]?.[retailer], name: e.target.value}}});
@@ -21,9 +32,9 @@ const EmailSelector = ({category, retailer}) => {
 		<div>
 			<div className="ret">{retailer}</div>
 			<div className="name"><i>Name:</i></div>
-			<input type="text" value={name} onChange={handleNameChange}/>
+			<input type="text" value={name || first_name || ""} onChange={handleNameChange}/>
 			<span><i>Email:</i></span>
-			<input type="text" value={email} onChange={handleEmailChange}/>
+			<input type="text" value={email || kamEmail || ""} onChange={handleEmailChange}/>
 			<style jsx>{`
 				.ret {
 					width: 105px;

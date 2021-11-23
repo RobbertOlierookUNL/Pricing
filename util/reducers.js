@@ -101,12 +101,12 @@ export const adviceStoreReducer = (state, action) => {
 			...state.advice?.[action.category],
 		};
 		const alreadyEmptied = [];
-		for (var singleAdvice of state.tempArr) {
+		for (const singleAdvice of state.tempArr) {
 			if (!alreadyEmptied.some(e => e === singleAdvice.ean)) {
 				newAdvice[singleAdvice.ean] = {};
 				alreadyEmptied.push(singleAdvice.ean);
 			}
-			newAdvice[singleAdvice.ean][singleAdvice.retailer] = {...singleAdvice, brand: action.brand, concept: action.concept};
+			newAdvice[singleAdvice.ean][singleAdvice.retailer] = {...singleAdvice, brand: action.brand, concept: action.concept, category: action.category};
 		}
 		return {
 			grabAdvice: false,
@@ -125,56 +125,41 @@ export const adviceStoreReducer = (state, action) => {
 	case COLLECT_CONCEPT:
 		return {...state, tempArr: [...state.tempArr, action.value]};
 	case UPDATE_ADVICE: {
-		const data  = state?.advice?.[action.category]?.[action.brand]?.[action.concept]?.data;
-		const findIt = data.findIndex(el => ((el.retailer === action.retailer) && (el.ean === action.ean)));
-		const changeIt = (findIt > -1) && {...data[findIt], [action.property]: action.value};
-		const newData = [...data];
-		newData[findIt] = changeIt;
-		return changeIt ? {...state, advice: {
-			...state.advice,
-			[action.category]: {
-				...state.advice?.[action.category],
-				[action.brand]: {
-					...state.advice?.[action.category]?.[action.brand],
-					[action.concept]: {
-						data: newData
-					}
-				}
-			}
-		}}
-			:
-			state;
-	}
-	case DELETE_ADVICE: {
-		const data  = state?.advice?.[action.category]?.[action.brand]?.[action.concept]?.data;
-		const newData = data.filter(el => !((el.retailer === action.retailer) && (el.ean === action.ean)));
+		const data  = state?.advice?.[action.category];
+		const newData = {...data};
+		newData[action.ean][action.retailer][action.property] = action.value;
+
 		return {...state, advice: {
 			...state.advice,
-			[action.category]: {
-				...state.advice?.[action.category],
-				[action.brand]: {
-					...state.advice?.[action.category]?.[action.brand],
-					[action.concept]: {
-						data: newData
-					}
-				}
-			}
-		}};
+			[action.category]: newData
+		}
+		};
+	}
+	case DELETE_ADVICE: {
+		const data  = state?.advice?.[action.category];
+		const newData = {...data};
+		delete newData[action.ean][action.retailer];
 
+		return {...state, advice: {
+			...state.advice,
+			[action.category]: newData
+		}
+		};
 	}
 	case DELETE_ADVICE_RETAILER: {
-		const filterRetailerAway = data => data.filter(el => (el.retailer !== action.retailer));
-		const newAdvice = {...state.advice};
-		const category = action.category;
-
-		const brands = Object.keys(state.advice[category]);
-		for (const brand of brands) {
-			const concepts = Object.keys(state.advice[category][brand]);
-			for (const concept of concepts) {
-				newAdvice[category][brand][concept].data = filterRetailerAway(state.advice[category][brand][concept].data);
+		const data  = state?.advice?.[action.category];
+		const newData = {...data};
+		for (const entry of Object.keys(newData)) {
+			delete newData[entry][action.retailer];
+			if (Object.keys(newData[entry]).length === 0) {
+				delete newData[entry];
 			}
 		}
-		return {...state, advice: newAdvice};
+
+		return {...state, advice: {
+			...state.advice,
+			[action.category]: newData
+		}};
 	}
 	case DELETE_ADVICE_CATEGORY: {
 		const newState = {...state, advice: {...state.advice}};

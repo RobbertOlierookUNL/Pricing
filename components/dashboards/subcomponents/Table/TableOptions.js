@@ -45,23 +45,6 @@ const TableOptions = () => {
 		setInfoMode(e.target.value);
 	};
 
-	const mail =  async () => {
-		try {
-
-			const res = await fetch("/api/email/test", {
-				method: "POST",
-				headers: {
-					"Content-type": "application/json; charset=UTF-8"
-				}
-			});
-			console.log({res});
-			const json = await res.json();
-			if (!res.ok) throw Error(json.message);
-
-		} catch (e) {
-			throw Error(e.message);
-		}
-	};
 
 	return (
 		<div className="option-container">

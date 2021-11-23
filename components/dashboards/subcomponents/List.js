@@ -5,7 +5,6 @@ import ListItem from "./ListItem";
 const List = ({items, activeItem, handleClick, setter, size="m"}) => {
 
 	useEffect(() => {
-		console.log({items, activeItem});
 		items && !activeItem && setter();
 	}, [items, activeItem]);
 

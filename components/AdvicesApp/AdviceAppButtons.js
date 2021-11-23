@@ -40,6 +40,7 @@ const AdviceAppButtons = () => {
 			});
 			console.log({res});
 			const json = await res.json();
+			console.log({json});
 			if (!res.ok) throw Error(json.message);
 
 		} catch (e) {

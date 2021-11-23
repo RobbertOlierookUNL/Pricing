@@ -1,38 +1,6 @@
-export const sendMail = async (axios) => {
-	try {
-		const token = "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";
-		const res = await axios.post("https://api.sendgrid.com/v3/mail/send", {
-			data: {
-				personalizations: [
-					{
-						to: [
-							{
-								email: "test@example.com"
-							}
-						]
-					}
-				],
-				from: {
-					"email": "test@example.com"
-				},
-				subject: "Sending with SendGrid is Fun",
-				content: [
-					{
-						type: "text/plain",
-						value: "and easy to do anywhere, even with cURL"
-					}
-				]
-			},
-			headers: {
-				"Content-type": "application/json; charset=UTF-8",
-				"Authorization": "Bearer " + token,
-			}
-		});
-		console.log({res});
-	} catch (e) {
-		throw Error({e});
-	}
 
+export const saveParse = (toParse, defaultVal = []) => {
+	return toParse ? JSON.parse(toParse) : defaultVal;
 };
 
 export const setDecimals = (num, dec) => {
@@ -113,6 +81,11 @@ export const lastTwoDigits = (string) => {
 	return returnString.slice(-2);
 };
 
+export const lastFourDigits = (string) => {
+	const returnString = "000" + string;
+	return returnString.slice(-4);
+};
+
 export const getIntervalDay = ({y = 0, m = 0, d = 0}) => {
 	const today = new Date();
 	const day = new Date(today.getFullYear() + y, today.getMonth() + m, today.getDate() + d);
@@ -129,8 +102,8 @@ export const getDateString = day => {
 	const a = f.split("-");
 	const dayString = lastTwoDigits(a[0]);
 	const monthString = lastTwoDigits(a[1]);
-	const yearString = lastTwoDigits(a[2]);
-	return "Date_" + dayString + monthString + yearString;
+	const yearString = lastFourDigits(a[2]);
+	return `${yearString}-${monthString}-${dayString}`;
 };
 
 

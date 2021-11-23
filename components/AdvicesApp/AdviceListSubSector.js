@@ -14,7 +14,6 @@ import EmailSelector from "./EmailSelector";
 
 const AdviceListSubSector = ({title, data, category}) => {
 	const [, dispatch] = useStore();
-
 	const deleteThis = () => {
 		dispatch(deleteAdviceRetailerFromCategory({
 			category,
@@ -24,7 +23,7 @@ const AdviceListSubSector = ({title, data, category}) => {
 	return (
 		<div>
 			<div className="sub-sector-title">
-				<EmailSelector retailer={title} category={category}/>
+				<EmailSelector retailer={title} category={category} data={data}/>
 				<span className="header">RSP</span>
 				<span className="header">Advies</span>
 				<span className="header">Delta (€)</span>

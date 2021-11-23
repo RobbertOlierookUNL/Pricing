@@ -9,7 +9,9 @@ const Table = ({data, loadingState, errorState, doSelectAll}) => {
 	const [capSelect, setCapSelect] = useState(defaultCapSelect);
 	const [retailerSelect, setRetailerSelect] = useState({});
 	const {value, done, execute} = doSelectAll;
-	// 
+
+
+	//
 	// useEffect(() => {
 	// 	if (data?.headers) {
 	// 		const tempObj = {};

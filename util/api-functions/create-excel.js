@@ -8,7 +8,7 @@ import { unilever_blue } from "../../lib/colors";
 
 
 const createExcel = (arrayOfObjects, hasNasaColumn) => {
-	console.log({arrayOfObjects});
+	// console.log({arrayOfObjects});
 	const totalMargin = arrayOfObjects.reduce((acc, val) => {
 		acc += val.Marge || 0;
 		return acc;
@@ -59,7 +59,7 @@ const createExcel = (arrayOfObjects, hasNasaColumn) => {
 	const endRow = {...range.e}.r;
 	range.e.r += 7;
 	const textRow = range.e.r;
-	console.log({range});
+	// console.log({range});
 	tl["!ref"] = XLSX.utils.encode_range(range);
 	tl["!cols"] = hasNasaColumn ?
 		[{wch: 2}, {wch: mainCharacters}, {wch: mainCharacters}, {wch: descriptionCharacters}, {wch: mainCharacters}, {wch: mainCharacters}, {wch: mainCharacters}]
@@ -146,7 +146,7 @@ const createExcel = (arrayOfObjects, hasNasaColumn) => {
 
 				};
 			}
-			console.log({value});
+			// console.log({value});
 
 		}
 
@@ -192,7 +192,7 @@ const createExcel = (arrayOfObjects, hasNasaColumn) => {
 		}
 	};
 
-	console.log({tl});
+	// console.log({tl});
 
 	const wb = { Sheets: { "Vrijblijvend Advies": styledTl}, SheetNames: ["Vrijblijvend Advies"] };
 	const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "buffer" });

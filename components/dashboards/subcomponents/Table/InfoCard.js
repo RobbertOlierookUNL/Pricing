@@ -2,7 +2,6 @@ import React from "react";
 
 import {unilever_blue, bottle_green} from "../../../../lib/colors";
 import EuroFormat from "../../../EuroFormat";
-import useConfig from "../../../../util/useConfig";
 
 
 

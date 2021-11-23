@@ -1,10 +1,10 @@
 import React from "react";
 
-import { getAdvicePrices } from "../util/functions";
+// import { getAdvicePrices } from "../util/functions";
 
 
 const dev = () => {
-	console.log(getAdvicePrices([10, 9.82, 9.79], [9.41, 9.39, 9.54], 12.99, 12.49));
+	// console.log(getAdvicePrices([10, 9.82, 9.79], [9.41, 9.39, 9.54], 12.99, 12.49));
 
 	return (
 		<div>

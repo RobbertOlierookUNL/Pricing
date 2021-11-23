@@ -1,5 +1,7 @@
 
 import { query } from "../../../lib/db";
+import { saveParse } from "../../../util/functions";
+
 
 
 const handler = async (req, res) => {
@@ -7,16 +9,28 @@ const handler = async (req, res) => {
 	if (brand && brand !== "undefined") {
 
 		try {
-			const category = unparsed ? JSON.parse(unparsed) : [];
+			const category = saveParse(unparsed);
 
 			if (req.method === "GET") {
 				const results = await query(/* sql */`
-        SELECT DISTINCT concept_bb FROM rsp_dashboard_basisbestand
-        WHERE brand_ul_bb = ? AND cluster_bb IN (${category.map(() => "?").toString()})
+					SELECT DISTINCT ProductBrandFormName
+					FROM athena_rsp_product
+					WHERE ProductBrandName = ?
+					AND ProductSubdivision2Desc IN (${category.map(() => "?").toString()})
+					AND ProductCode IN (
+						SELECT DISTINCT ESRA_Product
+						FROM athena_rsp_volume
+						WHERE 1M_Volume > 0
+					)
+					AND ProductCode IN (
+						SELECT DISTINCT Mrdr FROM athena_rsp_price
+						WHERE Price > 0
+					)
+					ORDER BY ProductBrandFormName
+
     `, [brand, ...category]
 				);
-
-				return res.json(results.map(o => o.concept_bb));
+				return res.json(results.map(o => o.ProductBrandFormName));
 			} else {
 				res.status(400).json({ message: `Does not support a ${req.method} request` });
 			}

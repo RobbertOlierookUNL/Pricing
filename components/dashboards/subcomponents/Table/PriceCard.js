@@ -56,8 +56,8 @@ const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections, isAl
 
 	useEffect(() => {
 		if (grabAdvice && selectedForAdvice) {
-			const {rsp, volume, retailer, formalTitle} = price;
-			const adviceEntry = {...adviceStub, rsp, retailer, advice, volume, formalTitle};
+			const {rsp, volume, retailer, formalTitle, email, sdEmail, first_name, sdFirstName, last_name, sdLastName} = price;
+			const adviceEntry = {...adviceStub, rsp, retailer, advice, volume, formalTitle, email, sdEmail, first_name, sdFirstName, last_name, sdLastName};
 			adviceDispatch(collectConcept(adviceEntry));
 		}
 	}, [grabAdvice]);

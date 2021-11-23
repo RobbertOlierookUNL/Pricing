@@ -1,8 +1,7 @@
+
 import axios from "axios";
 const https = require("https");
 
-
-import { sendMail } from "../../../util/functions";
 
 const instance = axios.create({
 	httpsAgent: new https.Agent({
@@ -10,41 +9,24 @@ const instance = axios.create({
 	})
 });
 
-
 export default async function (req, res) {
 
 	try {
-		const token = "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";
-		// const results = await instance({
-		// 	url: "https://api.sendgrid.com/v3/mail/send",
-		// 	method: "post",
-		// 	data: {
-		// 		personalizations: [
-		// 			{
-		// 				to: [
-		// 					{
-		// 						email: "robbert.olierook@unilever.com"
-		// 					}
-		// 				]
-		// 			}
-		// 		],
-		// 		from: {
-		// 			"email": "test@example.com"
-		// 		},
-		// 		subject: "Sending with SendGrid is Fun",
-		// 		content: [
-		// 			{
-		// 				type: "text/plain",
-		// 				value: "and easy to do anywhere, even with cURL"
-		// 			}
-		// 		]
-		// 	},
-		// 	headers: {
-		// 		"Content-type": "application/json; charset=UTF-8",
-		// 		"Authorization": "Bearer " + token,
-		// 	}
-		// });
-		const results = await instance({
+		// const sgMail = require("@sendgrid/mail");
+		// console.log({key: process.env.SG_API_KEY});
+		// sgMail.setApiKey(process.env.SG_API_KEY);
+		// const msg = {
+		// 	to: "robbert.olierok@unilever.com", // Change to your recipient
+		// 	from: "robbert.olierook@unilever.com", // Change to your verified sender
+		// 	subject: "Sending with SendGrid is Fun",
+		// 	text: "and easy to do anywhere, even with Node.js",
+		// 	html: "<strong>and easy to do anywhere, even with Node.js</strong>",
+		// };
+		// const r = await sgMail.send(msg);
+		// console.log("email sent");
+		// return res.json({r});
+		const token = process.env.SG_API_KEY;
+		await instance({
 			url: "https://api.sendgrid.com/v3/mail/send",
 			method: "post",
 			data: {
@@ -52,11 +34,14 @@ export default async function (req, res) {
 					{
 						to: [
 							{
-								email: "robbert.olierook@unilever.com"
+								email: "Coen.Molenaar@unilever.com",
 							}
 						]
 					}
 				],
+				from: {
+					email: "Robbert.Olierook@unilever.com",
+				},
 				subject: "Sending with SendGrid is Fun",
 				content: [
 					{
@@ -70,8 +55,34 @@ export default async function (req, res) {
 				"Authorization": "Bearer " + token,
 			}
 		});
-		console.log({results});
-		return res.json({results});
+		// const results = await instance({
+		// 	url: "https://api.sendgrid.com/v3/mail/send",
+		// 	method: "post",
+		// 	data: {
+		// 		personalizations: [
+		// 			{
+		// 				to: [
+		// 					{
+		// 						email: "robbert.olierook@unilever.com"
+		// 					}
+		// 				]
+		// 			}
+		// 		],
+		// 		subject: "Sending with SendGrid is Fun",
+		// 		content: [
+		// 			{
+		// 				type: "text/plain",
+		// 				value: "and easy to do anywhere, even with cURL"
+		// 			}
+		// 		]
+		// 	},
+		// 	headers: {
+		// 		"Content-type": "application/json; charset=UTF-8",
+		// 		"Authorization": "Bearer " + token,
+		// 	}
+		// });
+		console.log("is sent");
+		return res.json({done: true});
 
 	} catch (e) {
 		console.error({e});
@@ -81,7 +92,3 @@ export default async function (req, res) {
 
 
 }
-
-// subject: `Message From ${req.body.name}`,
-// text: req.body.message,
-// html: <div>{req.body.message}</div>

@@ -38,9 +38,9 @@ export function useConceptsFromBrand(categories, brand) {
 	return createSwrHook("rsp/get-all-concepts-from-brand", "concepts", {category, brand});
 }
 
-export function useDataFromConcept(categories, brand, concept) {
+export function useDataFromConcept(categories, brand, concept, cat) {
 	const category = JSON.stringify(categories);
-	return createSwrHook("rsp/get-rsp-info-from-concept", "data", {category, brand, concept});
+	return createSwrHook("rsp/get-rsp-info-from-concept", "data", {category, brand, concept, cat});
 }
 
 // export function useEansFromConcept(categories, brand, concept) {

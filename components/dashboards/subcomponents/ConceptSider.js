@@ -37,7 +37,6 @@ const ConceptSider = ({brands, brandsIsLoading, concepts, conceptsIsLoading}) =>
 
 	const brandItems = !brandsIsLoading && Array.isArray(brands) && [allBrandsText, ...brands];
 	const conceptItems = brand === allBrandsText ? [allBrandsText] : !conceptsIsLoading && Array.isArray(concepts) && [allConceptsFromBrandText(brand), ...concepts];
-	console.log({brands, concepts});
 
 	return (
 		<>

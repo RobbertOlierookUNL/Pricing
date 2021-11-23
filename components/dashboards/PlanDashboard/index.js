@@ -65,16 +65,15 @@ const PlanDashboard = () => {
 	const {concepts, conceptsIsLoading, conceptsReturnsError} = useConceptsFromBrand(categories, brand);
 	const defaultConcept = brand === allBrandsText ? allBrandsText : concepts?.[0];
 	const concept = activeConcept?.[category]?.[brand] || defaultConcept;
-	const {data, dataIsLoading, dataReturnsError} = useDataFromConcept(categories, brand, concept);
+	const {data, dataIsLoading, dataReturnsError} = useDataFromConcept(categories, brand, concept, category);
 	// const {eans, eansIsLoading, eansReturnsError} = useEansFromConcept(categories, brand, concept);
 	// const mode = brand === allBrandsText ? "getAllFromCategory" : "ean";
 	// const {data, dataIsLoading, dataReturnsError} = useDataFromEans(eans, mode, categories);
 
 
-
 	const errorState = categoriesReturnsError || brandsReturnsError || conceptsReturnsError || dataReturnsError;
 	const loadingState = categoriesIsLoading || brandsIsLoading || conceptsIsLoading || dataIsLoading;
-	usePrefetcher(loadingState, categories, brand, concept, brands, concepts, data);
+	usePrefetcher(loadingState, categories, brand, concept, brands, concepts, data, category);
 
 	// useEffect(() => {
 	//   brands && handleSetActiveBrand(defaultBrand);

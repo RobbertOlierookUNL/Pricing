@@ -16,7 +16,6 @@ const useOverflowDetector = () => {
 
 	useIsomorphicLayoutEffect(() => {
 		if ((node.current.clientWidth < node.current.scrollWidth) && !hasOverflow) {
-			console.log({node});
 			setHasOverflow(true);
 		} else if ((node.current.clientWidth >= node.current.scrollWidth) && hasOverflow) {
 			setHasOverflow(false);
