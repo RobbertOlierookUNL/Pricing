@@ -1,3 +1,19 @@
+
+export const saveParse = (toParse, defaultVal = []) => {
+	return toParse ? JSON.parse(toParse) : defaultVal;
+};
+
+export const setDecimals = (num, dec) => {
+	const factor = Math.pow(10, dec);
+	return Math.round(num * factor) / factor;
+};
+
+export const calculateMargin = (advice, rsp, volume) => {
+	const difference = advice - rsp;
+	const margin = difference * volume;
+	return margin || "";
+};
+
 export const distanceMaker = (value, inversed = false) => {
 	if (inversed) return value / 0.95;
 	return value * 0.95;
@@ -65,12 +81,33 @@ export const lastTwoDigits = (string) => {
 	return returnString.slice(-2);
 };
 
-export const getTodayString = () => {
-	const f = new Intl.DateTimeFormat("nl");
-	const a = f.formatToParts();
-	const dayString = lastTwoDigits(a[0].value);
-	const monthString = lastTwoDigits(a[2].value);
-	const yearString = lastTwoDigits(a[4].value);
-	return "Date_" + dayString + monthString + yearString;
-
+export const lastFourDigits = (string) => {
+	const returnString = "000" + string;
+	return returnString.slice(-4);
 };
+
+export const getIntervalDay = ({y = 0, m = 0, d = 0}) => {
+	const today = new Date();
+	const day = new Date(today.getFullYear() + y, today.getMonth() + m, today.getDate() + d);
+	return day;
+};
+
+
+// const getPoster = (params) => {
+//
+// }
+
+export const getDateString = day => {
+	const f = new Intl.DateTimeFormat("nl").format(day);
+	const a = f.split("-");
+	const dayString = lastTwoDigits(a[0]);
+	const monthString = lastTwoDigits(a[1]);
+	const yearString = lastFourDigits(a[2]);
+	return `${yearString}-${monthString}-${dayString}`;
+};
+
+
+
+
+
+export const getAvg = (arr) => arr.reduce(function(p,c,i){return p+(c-p)/(i+1);},0);

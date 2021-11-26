@@ -6,6 +6,8 @@ import { useStore } from "../../lib/Store";
 import Button from "../Button";
 import Grower from "../dashboards/subcomponents/Grower";
 import useCardRouter from "../../util/useCardRouter";
+import useConfig from "../../util/useConfig";
+
 
 
 
@@ -19,15 +21,17 @@ import useCardRouter from "../../util/useCardRouter";
 const AdviceAppButtons = () => {
 	const router = useRouter();
 	const goToRoute = useCardRouter();
-	const [{advice}, dispatch] = useStore();
+	const [{advice}] = useStore();
+	const [info] = useConfig("adviceInfo");
 
 	const mailAdvice = async () => {
 		try {
 			const body = JSON.stringify({
-				advice
+				advice,
+				info
 			});
 
-			const res = await fetch("/api/email/test", {
+			const res = await fetch("/api/email/send-all-mails", {
 				method: "PATCH",
 				body,
 				headers: {
@@ -36,6 +40,7 @@ const AdviceAppButtons = () => {
 			});
 			console.log({res});
 			const json = await res.json();
+			console.log({json});
 			if (!res.ok) throw Error(json.message);
 
 		} catch (e) {
