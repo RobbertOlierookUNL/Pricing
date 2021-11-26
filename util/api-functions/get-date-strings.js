@@ -10,7 +10,7 @@ const getDateStrings = () => {
 	if(today.getDay() == 0){
 		sunday = true;
 	}
-	const todayString = getDateString(getIntervalDay(saturday ? {d: -1} : sunday ? {d: -2} : {d: -4}));
+	const todayString = getDateString(getIntervalDay(saturday ? {d: -1} : sunday ? {d: -2} : {}));
 	const yesterdayString = getDateString(getIntervalDay(sunday ? {d: -2} : {d: -1}));
 	const lastTwoDayString = getDateString(getIntervalDay({d: -2}));
 	const lastFiveDayString = getDateString(getIntervalDay({d: -5}));

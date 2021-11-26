@@ -111,7 +111,9 @@ export const getRetailersAndMeasurementsPerEan = (measurements, retailerToInfo, 
 	return {actualRetailers: headers, measurementsByEan};
 };
 
-export const getMutationsFromMeasurements = (measurements, eanToDescription, dateStrings) => {
+export const getMutationsFromMeasurements = (measurements, eanToDescription, dateStrings, categoryInfo) => {
+	const {brand, concept, description} = categoryInfo;
+
 	const todayMeasurements = measurements.filter(e => e.priceDate === dateStrings.todayString);
 	const findOtherPrice = (ean, retailer, dateString) => measurements.find(
 		e => (e.ProductEAN === ean)
@@ -121,17 +123,19 @@ export const getMutationsFromMeasurements = (measurements, eanToDescription, dat
 	const mutations = [];
 	for (const measurement of todayMeasurements) {
 		const {Price, ProductEAN, RetailerRSP} = measurement;
-		const otherPrice = findOtherPrice(ProductEAN, RetailerRSP, dateStrings.lastWeekString);
+		const otherPrice = findOtherPrice(ProductEAN, RetailerRSP, dateStrings.intervalDate);
 		console.log({Price, ProductEAN, RetailerRSP, otherPrice});
 
 		if (Price !== otherPrice) {
 			mutations.push({
 				ean: ProductEAN,
-				description: eanToDescription[ProductEAN],
+				description: eanToDescription[ProductEAN]?.[description],
+				brand: eanToDescription[ProductEAN]?.[brand],
+				concept: eanToDescription[ProductEAN]?.[concept],
 				retailer: RetailerRSP,
 				oldPrice: otherPrice,
 				newPrice: Price,
-				oldDay: dateStrings.lastWeekString,
+				oldDay: dateStrings.intervalDate,
 				newDay: dateStrings.todayString
 			});
 		}

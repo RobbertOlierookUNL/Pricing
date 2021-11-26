@@ -1,15 +1,14 @@
-import React, {useContext} from "react";
+import React from "react";
 
-import { RetailerMode } from "../../../../pages/[category]/plan";
-import { sendMail } from "../../../../util/functions";
+import { ballet_pink } from "../../../../lib/colors";
 import {
 	typesOfAdvice,
 	typesOfInfo,
 	typesOfInterval
 } from "../../../../lib/config";
-import {unilever_blue, ballet_pink} from "../../../../lib/colors";
 import TableOption from "./TableOption";
 import useConfig from "../../../../util/useConfig";
+
 
 
 

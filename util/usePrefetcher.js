@@ -46,7 +46,7 @@ function* preFetchAll(doSomething, category, allBrands=[], allConcepts=[], thisB
 		}
 		for (const brand of [...allBrands, allBrandsText]) {
 			if (brand != thisBrand) {
-				const concepts = yield preFetch("rsp/get-all-concepts-from-brand", {category, brand});
+				const concepts = yield preFetch("rsp/get-all-concepts-from-brand", {category, brand, cat});
 				console.log(`PREFETCHER | prefetched ${brand}`);
 
 				const allConcepts = brand === allBrandsText ? concepts : [...concepts, allConceptsFromBrandText(brand)];

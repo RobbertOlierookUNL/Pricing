@@ -1,51 +1,59 @@
 import { query } from "../../lib/db";
 
-export const getProducts = async (category, brand, concept) => {
+export const getProducts = async (category, thisBrand, thisConcept, categoryInfo) => {
+	const {brand, concept, description, vol_time, min_vol} = categoryInfo;
+
 	return await query(/* sql */`
-    SELECT ProductEnglishName, ZcuEanCode, ProductCode FROM athena_rsp_product
-    WHERE ProductBrandFormName = ?
-    AND ProductBrandName = ?
+    SELECT ${description}, ZcuEanCode, ProductCode FROM athena_rsp_product
+    WHERE ${concept} = ?
+    AND ${brand} = ?
     AND ProductSubdivision2Desc IN (${category.map(() => "?").toString()})
     AND ProductCode IN (
       SELECT DISTINCT ESRA_Product FROM athena_rsp_volume
-      WHERE 1M_Volume > 0
+      WHERE ${vol_time} > ${min_vol}
     )
     ORDER BY ProductBrandName
-    `, [concept, brand, ...category]);
+    `, [thisConcept, thisBrand, ...category]);
 };
 
-export const getAllProducts = async (category) => {
+export const getAllProducts = async (category, categoryInfo) => {
+	const {description, vol_time, min_vol} = categoryInfo;
+
 	return await query(/* sql */`
-    SELECT ProductEnglishName, ZcuEanCode, ProductCode FROM athena_rsp_product
+    SELECT ${description}, ZcuEanCode, ProductCode FROM athena_rsp_product
     WHERE ProductSubdivision2Desc IN (${category.map(() => "?").toString()})
     AND ProductCode IN (
       SELECT DISTINCT ESRA_Product FROM athena_rsp_volume
-      WHERE 1M_Volume > 0
+      WHERE ${vol_time} > ${min_vol}
     )
     ORDER BY ProductBrandName
     `, category);
 };
 
-export const getAllProductsFromBrand = async (category, brand) => {
+export const getAllProductsFromBrand = async (category, thisBrand, categoryInfo) => {
+	const {brand, description, vol_time, min_vol} = categoryInfo;
+
 	return await query(/* sql */`
-    SELECT ProductEnglishName, ZcuEanCode, ProductCode FROM athena_rsp_product
-    WHERE ProductBrandName = ?
+    SELECT ${description}, ZcuEanCode, ProductCode FROM athena_rsp_product
+    WHERE ${brand} = ?
     AND ProductSubdivision2Desc IN (${category.map(() => "?").toString()})
     AND ProductCode IN (
       SELECT DISTINCT ESRA_Product FROM athena_rsp_volume
-      WHERE 1M_Volume > 0
+      WHERE ${vol_time} > ${min_vol}
     )
     ORDER BY ProductBrandName
-    `, [brand, ...category]);
+    `, [thisBrand, ...category]);
 };
 
-export const getAllDetailedProducts = async (category) => {
+export const getAllDetailedProducts = async (category, categoryInfo) => {
+	const {brand, concept, description, vol_time, min_vol} = categoryInfo;
+	
 	return await query(/* sql */`
-    SELECT ProductEnglishName, ZcuEanCode, ProductCode, ProductBrandFormName, ProductBrandName FROM athena_rsp_product
+    SELECT ${description}, ZcuEanCode, ProductCode, ${concept}, ${brand} FROM athena_rsp_product
     WHERE ProductSubdivision2Desc IN (${category.map(() => "?").toString()})
     AND ProductCode IN (
       SELECT DISTINCT ESRA_Product FROM athena_rsp_volume
-      WHERE 1M_Volume > 0
+      WHERE ${vol_time} > ${min_vol}
     )
     ORDER BY ProductBrandName
     `, category);
@@ -84,6 +92,51 @@ export const getRetailers = async (cat) => {
 	`);
 };
 
+export const getConcepts = async (category, thisBrand, categoryInfo) => {
+	const {brand, concept, vol_time, min_vol} = categoryInfo;
+	const results = await query(/* sql */`
+	SELECT DISTINCT ${concept}
+	FROM athena_rsp_product
+	WHERE ${brand} = ?
+	AND ProductSubdivision2Desc IN (${category.map(() => "?").toString()})
+	AND ProductCode IN (
+		SELECT DISTINCT ESRA_Product
+		FROM athena_rsp_volume
+		WHERE ${vol_time} > ${min_vol}
+	)
+	AND ProductCode IN (
+		SELECT DISTINCT Mrdr FROM athena_rsp_price
+		WHERE Price > 0
+	)
+	ORDER BY ProductBrandFormName
+
+`, [thisBrand, ...category]
+	);
+	return results.map(o => o[concept]);
+};
+
+export const getBrands = async (category, categoryInfo) => {
+	const {brand, vol_time, min_vol} = categoryInfo;
+	const results = await query(/* sql */`
+		SELECT DISTINCT ${brand} FROM athena_rsp_product
+		WHERE ProductSubdivision2Desc IN (${category.map(() => "?").toString()})
+		AND ProductCode IN (
+			SELECT DISTINCT ESRA_Product FROM athena_rsp_volume
+			WHERE ${vol_time} > ${min_vol}
+		)
+		AND ProductCode IN (
+			SELECT DISTINCT Mrdr FROM athena_rsp_price
+			WHERE Price > 0
+		)
+		ORDER BY ProductBrandName
+`, category
+	);
+	return results.map(o => o[brand]);
+};
+
+
+
+
 export const getCategories = async (category) => {
 	console.log({category});
 	const results = await query(/* sql */`
@@ -92,5 +145,15 @@ export const getCategories = async (category) => {
 `, category
 	);
 	const myResults = results.map(o => o.vanguard_category);
+	return myResults;
+};
+
+export const getCategoryInfo = async (category) => {
+	const results = await query(/* sql */`
+	SELECT brand, concept, description, vol_time, min_vol FROM athena_advicetool_category
+	WHERE category = ?
+`, category
+	);
+	const myResults = results[0];
 	return myResults;
 };

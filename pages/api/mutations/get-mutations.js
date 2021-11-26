@@ -1,37 +1,42 @@
 
 import {
+	getAllDetailedProducts,
 	getAllProducts,
 	getCategories,
+	getCategoryInfo,
 	getMeasurements
 } from "../../../util/api-functions/queries";
 import {
 	getCodes,
 	getMutationsFromMeasurements
 } from "../../../util/api-functions/query-helpers";
-import { query } from "../../../lib/db";
 import getDateStrings from "../../../util/api-functions/get-date-strings";
 
 
 
 
 
+
+
 const handler = async (req, res) => {
-	const {category} = req.query;
+	const {category, interval} = req.query;
 	try {
 
 		if (req.method === "GET") {
-			const dateStrings = getDateStrings();
+			const {[interval]: intervalDate, todayString } = getDateStrings();
+
 			console.log(0);
 			const categories = await getCategories(category);
+			const categoryInfo = await getCategoryInfo(category);
 			console.log(1);
-			const products = await getAllProducts(categories);
+			const products = await getAllDetailedProducts(categories, categoryInfo);
 			console.log(2);
 			const {eans, eanToDescription} = getCodes(products);
 			console.log({products, eans});
 			console.log(3);
-			const measurements = await getMeasurements(eans, dateStrings);
+			const measurements = await getMeasurements(eans, {intervalDate, todayString});
 			console.log(4);
-			const mutations = getMutationsFromMeasurements(measurements, eanToDescription, dateStrings);
+			const mutations = getMutationsFromMeasurements(measurements, eanToDescription, {intervalDate, todayString}, categoryInfo);
 
 			return res.json(mutations);
 		} else {

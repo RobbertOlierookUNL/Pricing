@@ -1,8 +1,8 @@
-import React, {useEffect, useContext} from "react";
+import React from "react";
 
-import { ActiveConcept } from "../../../../pages/[category]/plan";
 import {bottle_green} from "../../../../lib/colors";
 import TableOptions from "./TableOptions";
+
 
 
 const TableCapHeader = ({caphCount, capoCount, caplCount, doCapSelect}) => {

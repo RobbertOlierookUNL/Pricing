@@ -23,19 +23,22 @@ export function useRetailers() {
 	return createSwrHook("rsp/get-retailer-info", "retailers");
 }
 
+export function useMutations(category, interval) {
+	return createSwrHook("mutations/get-mutations", "mutations", {interval, category});
+}
 
 export function useCategoriesFromCategory(category) {
 	return createSwrHook("rsp/get-categories-from-category", "categories", {category});
 }
 
-export function useBrandsFromCategory(categories) {
+export function useBrandsFromCategory(categories, cat) {
 	const category = JSON.stringify(categories);
-	return createSwrHook("rsp/get-all-brands-from-category", "brands", {category});
+	return createSwrHook("rsp/get-all-brands-from-category", "brands", {category, cat});
 }
 
-export function useConceptsFromBrand(categories, brand) {
+export function useConceptsFromBrand(categories, brand, cat) {
 	const category = JSON.stringify(categories);
-	return createSwrHook("rsp/get-all-concepts-from-brand", "concepts", {category, brand});
+	return createSwrHook("rsp/get-all-concepts-from-brand", "concepts", {category, brand, cat});
 }
 
 export function useDataFromConcept(categories, brand, concept, cat) {

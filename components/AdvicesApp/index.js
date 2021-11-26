@@ -52,7 +52,7 @@ const AdvicesApp = () => {
 
 	return (
 		<Background image={candyPinkBackgrund}>
-			<Sider title="Pricing Tool"/>
+			<Sider title="RSP Monitor"/>
 			<View>
 				<DashboardContainer type="with-header-and-footer">
 					<DashboardHeader>

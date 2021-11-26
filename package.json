@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3005",
+    "dv": "next dev",
     "build": "next build",
     "start": "next start -p 3006",
     "launch": "npm run build && npm run start",

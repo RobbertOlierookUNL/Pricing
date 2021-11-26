@@ -7,6 +7,7 @@ import {
 import {
 	getAllProducts,
 	getAllProductsFromBrand,
+	getCategoryInfo,
 	getMeasurements,
 	getProducts,
 	getRetailers,
@@ -25,6 +26,7 @@ import getDateStrings from "../../../util/api-functions/get-date-strings";
 
 
 
+
 const handler = async (req, res) => {
 	const { category: unparsed, brand, concept, cat } = req.query;
 	const dateStrings = getDateStrings();
@@ -36,13 +38,14 @@ const handler = async (req, res) => {
 			const category = saveParse(unparsed);
 
 			if (req.method === "GET") {
+				const categoryInfo = await getCategoryInfo(cat);
 				let products;
 				if (allMode) {
-					products = await getAllProducts(category);
+					products = await getAllProducts(category, categoryInfo);
 				} else if (allFromBrandMode) {
-					products = await getAllProductsFromBrand(category, brand);
+					products = await getAllProductsFromBrand(category, brand, categoryInfo);
 				} else {
-					products = await getProducts(category, brand, concept);
+					products = await getProducts(category, brand, concept, categoryInfo);
 				}
 				console.log(`${brand} - ${concept} - #products: ${products.length} - 0%`);
 				const {eanToMrdr, eans, mrdrs} = getCodes(products);
@@ -75,7 +78,7 @@ const handler = async (req, res) => {
 							const prices = fillData(data, eanToMrdr[ean], actualRetailers, retailerToInfo, mrdrToVolumeInfo);
 							const [defaultAdviceHigh, defaultAdviceLow] = getAdvicePrices(poolCapH, poolCapL, cap, priceSetterPrice);
 							unSortedBody.push({
-								Artikelomschrijving: p.ProductEnglishName,
+								Artikelomschrijving: p[categoryInfo.description],
 								CAP_H: makeRetailSalesPrice(cap || 0),
 								CAP_L: makeRetailSalesPrice(distanceMaker(cap || 0)),
 								EAN_CE: ean,
@@ -109,7 +112,7 @@ const handler = async (req, res) => {
 			res.status(500).json({ message: e.message});
 		}
 	} else {
-		res.status(400).json({ message: "No info yet" });
+		res.status(200).json({ message: "No info yet" });
 	}
 };
 

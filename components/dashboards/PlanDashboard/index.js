@@ -59,10 +59,10 @@ const PlanDashboard = () => {
 
 
 	const {categories, categoriesIsLoading, categoriesReturnsError} = useCategoriesFromCategory(category);
-	const {brands, brandsIsLoading, brandsReturnsError} = useBrandsFromCategory(categories);
+	const {brands, brandsIsLoading, brandsReturnsError} = useBrandsFromCategory(categories, category);
 	const defaultBrand = brands?.[0];
 	const brand = activeBrand?.[category] || defaultBrand;
-	const {concepts, conceptsIsLoading, conceptsReturnsError} = useConceptsFromBrand(categories, brand);
+	const {concepts, conceptsIsLoading, conceptsReturnsError} = useConceptsFromBrand(categories, brand, category);
 	const defaultConcept = brand === allBrandsText ? allBrandsText : concepts?.[0];
 	const concept = activeConcept?.[category]?.[brand] || defaultConcept;
 	const {data, dataIsLoading, dataReturnsError} = useDataFromConcept(categories, brand, concept, category);
@@ -100,7 +100,7 @@ const PlanDashboard = () => {
 	console.log({category, categories, brands, concepts, data, advice});
 	return (
 		<Background image={candyPinkBackground}>
-			<Sider title="Pricing Tool"/>
+			<Sider title="RSP Monitor"/>
 
 			<View rightSider>
 				<DashboardContainer type="with-header-and-footer">
