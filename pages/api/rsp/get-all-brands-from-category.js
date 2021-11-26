@@ -1,22 +1,22 @@
 
-import { query } from "../../../lib/db";
+import {
+	getBrands,
+	getCategoryInfo,
+} from "../../../util/api-functions/queries";
+import { saveParse } from "../../../util/functions";
+
+
 
 
 const handler = async (req, res) => {
-	const { category: unparsed } = req.query;
-	console.log({unparsed});
+	const { category: unparsed, cat } = req.query;
 	if (unparsed && unparsed !== "undefined") {
 		try {
-			const category = unparsed ? JSON.parse(unparsed) : [];
-
+			const category = saveParse(unparsed);
 			if (req.method === "GET") {
-				const results = await query(/* sql */`
-        SELECT DISTINCT brand_ul_bb FROM rsp_dashboard_basisbestand
-        WHERE cluster_bb IN  (${category.map(() => "?").toString()})
-    `, category
-				);
-
-				return res.json(results.map(o => o.brand_ul_bb));
+				const categoryInfo = await getCategoryInfo(cat);
+				const brands = await getBrands(category, categoryInfo);
+				return res.json(brands);
 			} else {
 				res.status(400).json({ message: `Does not support a ${req.method} request` });
 			}
@@ -25,7 +25,7 @@ const handler = async (req, res) => {
 			res.status(500).json({ message: e.message});
 		}
 	} else {
-		res.status(400).json({ message: "No info yet" });
+		res.status(200).json({ message: "No info yet" });
 	}
 
 };

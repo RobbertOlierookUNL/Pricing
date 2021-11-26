@@ -6,39 +6,7 @@ import { ballet_pink } from "../../../../lib/colors";
 
 const SkeletonRows = ({count = 10}) => {
 	const fakeData = Array(count).fill(".");
-	// const factor = 1 / count;
-	//
-	// const lighterCssString = fakeData.map((dot, index) => {
-	// 	const opac = Math.round((1 - (index * factor))*100)/100;
-	// 	if (index > 0) {
-	// 		return (
-	// 			`.skeleton-row:nth-child(${index + 1}) {
-	//       opacity: ${opac};
-	//     }
-	//     `);
-	// 	}
-	// 	else {
-	// 		return "";
-	// 	}
-	// }).join("");
-	//
-	// const testString = `.skeleton-row:nth-child(2) {
-	//           opacity: 0.8;
-	//         }
-	//
-	//         .skeleton-row:nth-child(3) {
-	//           opacity: 0.6;
-	//         }
-	//
-	//         .skeleton-row:nth-child(4) {
-	//           opacity: 0.4;
-	//         }
-	//
-	//         .skeleton-row:nth-child(5) {
-	//           opacity: 0.2;
-	//         }`;
-	//
-	// console.log({lighterCssString});
+
 	return (
 		<div className="skeleton-container">
 			{fakeData.map((dot, i) => <div className="skeleton-row" key={i}><div/></div>)}

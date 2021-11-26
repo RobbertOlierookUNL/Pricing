@@ -1,10 +1,12 @@
 import React, { useContext } from "react";
 
-import { ActiveBrand, ActiveConcept } from "../../../../pages/[category]/plan";
+// import { ActiveBrand, ActiveConcept } from "../../../../pages/[category]/plan";
 import { useStore } from "../../../../lib/Store";
 import SkeletonRows from "./SkeletonRows";
 import TableRow from "./TableRow";
 import useCategory from "../../../../util/useCategory";
+// import useConfig from "../../../../util/useConfig";
+
 
 
 
@@ -15,33 +17,13 @@ import useCategory from "../../../../util/useCategory";
 const TableBody = ({data, loadingState, errorState, headerSelections, doSelectAll}) => {
 	const [state] = useStore();
 	const {advice} = state;
-	const [activeConcept] = useContext(ActiveConcept);
-	const [activeBrand] = useContext(ActiveBrand);
 	const category = useCategory();
-	const isInAdviceStore = !!advice?.[category]?.[activeBrand]?.[activeConcept]?.data[0];
-	const getAdviceData = () => {
-		if (isInAdviceStore) {
-			return advice[category][activeBrand][activeConcept].data;
-		}
-		return false;
-	};
-	const adviceData = getAdviceData();
 
 	const isAlreadyInAdvice = (ean, retailer) => {
-		return adviceData?.some(entry => {
-			if (entry.ean === ean && entry.retailer === retailer) {
-				return true;
-			}
-			return false;
-		});
+		return !!advice?.[category]?.[ean]?.[retailer];
 	};
 
-
-
 	console.log({state});
-	console.log({isInAdviceStore});
-
-
 
 	return (
 		<div>
@@ -53,7 +35,6 @@ const TableBody = ({data, loadingState, errorState, headerSelections, doSelectAl
 					even={(idx+2)%2 === 0}
 					key={entry.EAN_CE}
 					isAlreadyInAdvice={isAlreadyInAdvice}
-					isInAdviceStore={isInAdviceStore}
 					doSelectAll={doSelectAll}
 				/>)}
 		</div>

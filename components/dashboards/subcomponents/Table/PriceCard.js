@@ -1,11 +1,14 @@
-import NumberFormat from "react-number-format";
 import React, { useState, useEffect } from "react";
 
 import {ballet_pink, bottle_green, sunset_red, unilever_blue, denim_blue, orchid_purple} from "../../../../lib/colors";
 import { collectConcept } from "../../../../util/reducers";
+import { setDecimals } from "../../../../util/functions";
 import { useStore } from "../../../../lib/Store";
 import EuroFormat from "../../../EuroFormat";
+import NumberFormat from "react-number-format";
 import advices from "../../../../pages/advices";
+import useConfig from "../../../../util/useConfig";
+import usePriceInfo from "../../../../util/usePriceInfo";
 
 
 
@@ -14,27 +17,47 @@ import advices from "../../../../pages/advices";
 
 
 
-const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections, isAlreadyInAdvice, isInAdviceStore}) => {
-	const [{grabAdvice, advice: advices}, adviceDispatch] = useStore();
-	const [retailerSelect, capSelect] = headerSelections;
 
-	const inAdvice = isInAdviceStore && isAlreadyInAdvice(adviceStub.ean, price.retailer);
-	const adviceButNotInAdvice = isInAdviceStore && !isAlreadyInAdvice(adviceStub.ean, price.retailer);
+
+
+const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections, isAlreadyInAdvice}) => {
+	const [intervalMode] = useConfig("intervalMode");
+	const [deltaMode] = useConfig("deltaMode");
+	const PriceInfo = usePriceInfo();
+
+
+	const [{grabAdvice}, adviceDispatch] = useStore();
+	const [retailerSelect] = headerSelections;
+
+	const thisIsAlreadyInAdvice = isAlreadyInAdvice(adviceStub.ean, price.retailer);
+
+	const inAdvice = thisIsAlreadyInAdvice;
 
 
 	const couldBeAdviced = price.rsp && (price.rsp < advice);
 
-	const [localState, setLocalState] = useState(!adviceButNotInAdvice && couldBeAdviced);
+	const [localState, setLocalState] = useState(false);
 
 	const columnSelect = retailerSelect[price.retailer];
 	const selectedForAdvice = couldBeAdviced && localState;
+	const adviceButNotInAdvice = thisIsAlreadyInAdvice && !selectedForAdvice;
+
+
+
+	let delta = price.rsp - price[intervalMode];
+
+	if (deltaMode) {
+		delta = Math.round((delta / price.rsp) * 100);
+	} else if (price.rsp) {
+		delta = setDecimals(delta, 2);
+
+	}
+
 
 	useEffect(() => {
 		if (grabAdvice && selectedForAdvice) {
-			const {rsp, volume, retailer} = price;
-			const difference = advice - rsp;
-			const margin = difference * volume;
-			const adviceEntry = {...adviceStub, rsp, margin, retailer, advice};
+			const {rsp, volume, retailer, formalTitle, email, sdEmail, first_name, sdFirstName, last_name, sdLastName} = price;
+			const adviceEntry = {...adviceStub, rsp, retailer, advice, volume, formalTitle, email, sdEmail, first_name, sdFirstName, last_name, sdLastName};
 			adviceDispatch(collectConcept(adviceEntry));
 		}
 	}, [grabAdvice]);
@@ -47,11 +70,12 @@ const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections, isAl
 		setLocalState(columnSelect);
 	}, [columnSelect]);
 
+	useEffect(() => {
+		if (thisIsAlreadyInAdvice) {
+			setLocalState(true);
+		}
+	}, [thisIsAlreadyInAdvice]);
 
-
-	// useEffect(() => {
-	// 	setLocalState(gridSelect);
-	// }, [gridSelect]);
 
 	const handleLocalChange = () => {
 		couldBeAdviced && setLocalState(!localState);
@@ -62,8 +86,8 @@ const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections, isAl
 			{(price.rsp || price.volume) ?
 				<>
 					<div className="price"><EuroFormat value={price.rsp}/></div>
-					{price.delta ? <div className="delta"><NumberFormat value={price.delta} displayType="text" decimalSeparator="," thousandSeparator="."/></div> : <></>}
-					<div className="price-card-volume"><NumberFormat value={price.volume} displayType="text" decimalSeparator="," thousandSeparator="."/></div>
+					{delta ? <div className="delta"><NumberFormat value={delta} displayType="text" decimalSeparator="," thousandSeparator="." suffix={deltaMode && "%"}/></div> : <></>}
+					<div className="info"><PriceInfo price={price} advice={advice} selectedForAdvice={selectedForAdvice}/></div>
 				</>
 				:
 				<></>
@@ -84,8 +108,8 @@ const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections, isAl
 
 						display: grid;
 						grid-template: "price delta" 13px
-					                 ". ." 13px
-					                 "volume volume" 13px
+					                 "price ." 13px
+					                 "info info" 13px
 					                 / 1fr min-content;
 					}
 					.price-card:nth-child(odd) {
@@ -93,7 +117,12 @@ const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections, isAl
 					}
 					.price {
 						grid-area: price;
-						color: ${(couldBeAdviced && !selectedForAdvice) ? unilever_blue.color : "inherit"};
+						${(couldBeAdviced && !selectedForAdvice) ? `color: ${unilever_blue.color}` : ""};
+						${adviceButNotInAdvice ? `color: ${orchid_purple.color}` : ""};
+						margin: 0 auto;
+						font-size: 1.2em;
+						padding: 5px 0;
+						line-height: 16px;
 						font-weight: ${couldBeAdviced ? "bold" : "inherit"};
 
 
@@ -108,14 +137,16 @@ const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections, isAl
 						padding: 0 3px;
 
 
-						${price.delta ? `background-color: ${price.delta < 0 ? sunset_red.color :  bottle_green.color} !important` : ""};
+						${delta ? `background-color: ${delta < 0 ? sunset_red.color :  bottle_green.color} !important` : ""};
 
 					}
 
-					.price-card-volume {
+					.info {
 						color: ${selectedForAdvice ? "#ddd" : "#666"};
 						font-size: 0.8em;
-						grid-area: volume;
+						grid-area: info;
+						line-height: 13px;
+						margin: auto;
 					}
 				`}
 			</style>

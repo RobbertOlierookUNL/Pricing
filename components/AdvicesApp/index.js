@@ -1,9 +1,11 @@
 import React from "react";
 
+import { clearAdvice } from "../../util/reducers";
 import { useStore } from "../../lib/Store";
 import AdviceAppButtons from "./AdviceAppButtons";
 import AdviceList from "./AdviceList";
 import Background from "../Background";
+import CloseButton from "../Button/CloseButton";
 import DashboardContainer from "../dashboards/DashboardContainer";
 import DashboardContent from "../dashboards/DashboardContent";
 import DashboardFooter from "../dashboards/DashboardFooter";
@@ -24,51 +26,42 @@ import candyPinkBackgrund from "../../res/candy-pink-background.jpg";
 
 
 
+
 const AdvicesApp = () => {
 	const [{advice}, dispatch] = useStore();
 
+	const clear = () => dispatch(clearAdvice());
+
 
 	const advicePerRetailerAndCategory = {};
-
-	const categories = Object.keys(advice);
-
-
-	for (const category of categories) {
-		let combinedData = [];
-		const brands = Object.keys(advice[category]);
-		for (const brand of brands) {
-			const concepts = Object.keys(advice[category][brand]);
-			for (const concept of concepts) {
-				combinedData = [...combinedData, ...advice[category][brand][concept].data];
-			}
-		}
-		const retailerMoveUp = combinedData.reduce((acc, val) => {
-			const newObject = {
-				EAN: val.ean,
-				Productomschrijving: val.description,
-				RSP: val.rsp,
-				Adviesprijs: val.advice,
-				Marge: val.margin,
-			};
-			if (Object.prototype.hasOwnProperty.call(acc, val.retailer)) {
-				acc[val.retailer].push(newObject);
-			} else {
-				acc[val.retailer] = [newObject];
+	for (const category of Object.keys(advice)) {
+		const retailerMoveUp = Object.values(advice[category]).reduce((acc, val) => {
+			for (const retailer of Object.keys(val)) {
+				if (Object.prototype.hasOwnProperty.call(acc, retailer)) {
+					acc[retailer].push(val[retailer]);
+				} else {
+					acc[retailer] = [val[retailer]];
+				}
 			}
 			return acc;
 		}, {});
 		advicePerRetailerAndCategory[category] = retailerMoveUp;
 	}
+
 	console.log({advice, advicePerRetailerAndCategory});
+
 	return (
 		<Background image={candyPinkBackgrund}>
-			<Sider title="Pricing Tool"/>
+			<Sider title="RSP Monitor"/>
 			<View>
 				<DashboardContainer type="with-header-and-footer">
 					<DashboardHeader>
 						<GenericTitle>
 							Adviezen
 						</GenericTitle>
+						<div className="close-button">
+							<CloseButton onClick={clear}/>
+						</div>
 					</DashboardHeader>
 					<DashboardContent>
 						<AdviceList data={advicePerRetailerAndCategory}/>
@@ -80,6 +73,17 @@ const AdvicesApp = () => {
 					</DashboardFooter>
 				</DashboardContainer>
 			</View>
+			<style jsx>{`
+				.close-button {
+					position: absolute;
+					right: 0;
+					top: 0;
+					width: 3ch;
+					line-height: 25px;
+					text-align: center;
+					color: white;
+				}
+			`}</style>
 		</Background>
 	);
 };

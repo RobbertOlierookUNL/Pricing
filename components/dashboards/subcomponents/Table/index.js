@@ -5,20 +5,23 @@ import TableBody from "./TableBody";
 
 
 const Table = ({data, loadingState, errorState, doSelectAll}) => {
-
-	const [capSelect, setCapSelect] = useState({capH: true, capL: true});
+	const defaultCapSelect = {capH: false, capL: false, capO: false};
+	const [capSelect, setCapSelect] = useState(defaultCapSelect);
 	const [retailerSelect, setRetailerSelect] = useState({});
 	const {value, done, execute} = doSelectAll;
 
-	useEffect(() => {
-		if (data?.headers) {
-			const tempObj = {};
-			for (const header of data.headers) {
-				tempObj[header.retailer] = header.cap === "O" ? false : true;
-			}
-			setRetailerSelect(tempObj);
-		}
-	}, [data?.headers?.[0]?.retailer]);
+
+	//
+	// useEffect(() => {
+	// 	if (data?.headers) {
+	// 		const tempObj = {};
+	// 		for (const header of data.headers) {
+	// 			tempObj[header.retailer] = header.cap === "O" ? false : false;
+	// 		}
+	// 		setRetailerSelect(tempObj);
+	// 		setCapSelect(defaultCapSelect);
+	// 	}
+	// }, [data?.headers?.[0]?.retailer]);
 
 	useEffect(() => {
 		if ((data?.headers) && (value !== "unset") && (done === false)) {
@@ -28,7 +31,7 @@ const Table = ({data, loadingState, errorState, doSelectAll}) => {
 				tempObj[header.retailer] = value;
 			}
 			setRetailerSelect(tempObj);
-			setCapSelect({capH: value, capL: value});
+			setCapSelect({capH: value, capO: value, capL: value});
 
 		}
 	}, [done]);

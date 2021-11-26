@@ -5,12 +5,12 @@ import ListItem from "./ListItem";
 const List = ({items, activeItem, handleClick, setter, size="m"}) => {
 
 	useEffect(() => {
-		items && setter();
-	}, [items]);
+		items && !activeItem && setter();
+	}, [items, activeItem]);
 
 
 	return (
-		<div className={`list-${size}`}>
+		<div className={`list-${size} list`}>
 			{Array.isArray(items) && items?.map(item => <ListItem key={item} item={item} activeItem={activeItem} handleClick={handleClick}/>)}
 			<style jsx>{`
 				.list-s {
@@ -21,6 +21,10 @@ const List = ({items, activeItem, handleClick, setter, size="m"}) => {
 				}
 				.list-l {
 					width: 250px;
+				}
+				.list {
+
+
 				}
 			`}</style>
 		</div>

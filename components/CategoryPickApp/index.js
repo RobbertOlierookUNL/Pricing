@@ -19,12 +19,12 @@ const CategoryPickApp = () => {
 
 	const goToRoute = useCardRouter();
 
-	const suffice = string => string + "/plan";
+	const suffice = string => string + "/overview";
 
 
 	return (
 		<Background image={candyPinkBackground}>
-			<Sider title="Pricing Tool"/>
+			<Sider title="RSP Monitor"/>
 			<View>
 				<PickCardLayout type="2x2">
 					<PickCard title="Foods" image={food} route={goToRoute(suffice("fds"))}/>

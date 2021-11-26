@@ -3,11 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3005",
+    "dv": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start -p 3006",
+    "launch": "npm run build && npm run start",
+    "hybrid": "npm run launch && npm run dev"
   },
   "dependencies": {
+    "@sendgrid/mail": "^7.6.0",
+    "axios": "^0.24.0",
     "next": "10.2.0",
     "next-images": "^1.7.0",
     "nodemailer": "^6.6.1",

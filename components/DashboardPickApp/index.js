@@ -47,7 +47,7 @@ const DashboardPickApp = () => {
 
 	return (
 		<Background image={candyPinkBackgrund}>
-			<Sider title="Pricing Tool"/>
+			<Sider title="RSP Monitor"/>
 			<View>
 				<PickCardLayout type="141">
 					<PickCard type="first" title="Planning" image={plan} route={goToRoute("schedule")} total={17}/>

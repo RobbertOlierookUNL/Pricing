@@ -1,6 +1,6 @@
 import React from "react";
 
-const EuroInput = (props) => {
+const EuroInput = ({height, ...props}) => {
 
 	return (
 		<>
@@ -15,7 +15,7 @@ const EuroInput = (props) => {
           background-color: rgba(255,255,255,0.25);
           appearance: none;
           width: 100%;
-          height: 12px;
+          ${height ? "height: "+height:""};
           transition: transform 150ms linear, box-shadow 150ms linear;
         }
         .euro-input:hover {

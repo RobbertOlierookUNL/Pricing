@@ -1,21 +1,20 @@
-import React, {useEffect, useContext}  from "react";
+import React from "react";
 
-import { ActiveConcept } from "../../../../pages/[category]/plan";
 import { unilever_blue } from "../../../../lib/colors";
+
 
 
 const TableRetailerHeader = ({headers, doRetailerSelect}) => {
 	const [retailerSelect, handleRetailerSelect] = doRetailerSelect;
-	const [activeConcept] = useContext(ActiveConcept);
 
 
-	useEffect(() => {
-		headers.forEach((retailer) => {
-			if (!retailerSelect[retailer.retailer]) {
-				handleRetailerSelect(retailer.retailer)();
-			}
-		});
-	}, [headers, activeConcept]);
+	// useEffect(() => {
+	// 	headers.forEach((retailer) => {
+	// 		if (retailerSelect[retailer.retailer]) {
+	// 			handleRetailerSelect(retailer.retailer)(false);
+	// 		}
+	// 	});
+	// }, [headers, activeConcept]);
 
 	return (
 		<div>
