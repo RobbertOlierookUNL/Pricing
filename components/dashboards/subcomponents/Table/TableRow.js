@@ -20,7 +20,9 @@ import useConfig from "../../../../util/useConfig";
 const TableRow = ({entry, even, headerSelections, isAlreadyInAdvice, doSelectAll, umfeld}) => {
 	const {prices, ...info} = entry;
 	const [retailerMode] = useConfig("retailerMode");
-	const {adviceHigh, handleHighChange, adviceLow, handleLowChange} = useAdvicePrices(info);
+	const [triggerSaveAdvicePrices] = useConfig("triggerSaveAdvicePrices");
+
+	const {adviceHigh, handleHighChange, adviceLow, handleLowChange, saveAdvicePrices} = useAdvicePrices(info);
 	const {sortedData} = useRetailerSorter(prices, retailerMode);
 
 	const [localStates, setLocalStates] = useState(Array(sortedData.length).fill(false));
@@ -37,16 +39,19 @@ const TableRow = ({entry, even, headerSelections, isAlreadyInAdvice, doSelectAll
 	const [{grabAdvice}, adviceDispatch] = useStore();
 
 	useEffect(() => {
+		if (triggerSaveAdvicePrices) {
+			saveAdvicePrices();
+		}
+	}, [triggerSaveAdvicePrices]);
+
+	useEffect(() => {
 		if (grabAdvice && noneSelected) {
 			adviceDispatch(collectConcept({ean: info.EAN_CE}));
 		}
 	}, [grabAdvice]);
 	const {value, done, execute} = doSelectAll;
 
-	//// TODO: Make dynamic
-	// const isAhListed = sortedData.some(e => e.retailer === "AH" && e.rsp > 0);
-	// const isJumboListed = sortedData.some(e => e.retailer === "Jumbo L" && e.rsp > 0);
-	// let defaultValue = (isAhListed && isJumboListed);
+
 	let defaultValue = false;
 	const [rowSelect, setRowSelect] = useState(defaultValue);
 

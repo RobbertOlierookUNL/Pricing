@@ -343,6 +343,15 @@ export const upsertConceptNickame = async (concept, cluster, brand, nickname) =>
 	);
 };
 
+export const upsertAdvicePrices = async (ean, adviceH, adviceL) => {
+	return await query(/* sql */`
+		INSERT INTO athena_advicetool_ean_config (ean, adviceH, adviceL)
+		VALUES (?, ?, ?)
+		ON DUPLICATE KEY UPDATE adviceH = ?, adviceL = ?
+		`, [ean, adviceH, adviceL, adviceH, adviceL]
+	);
+};
+
 export const deleteConceptNickame = async (concept, cluster, brand) => {
 	return await query(/* sql */`
 		DELETE FROM athena_advicetool_concept_nicknames

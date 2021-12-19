@@ -1,9 +1,16 @@
 import {useState, useEffect} from "react";
 
-import { distanceMaker, makeRetailSalesPrice } from "./functions";
+import {
+	distanceMaker,
+	makeRetailSalesPrice,
+	myFetch,
+	propertySetter
+} from "./functions";
 import useCategory from "./useCategory";
 import useConfig from "./useConfig";
 import useDidUpdateEffect from "./useDidUpdateEffect";
+
+
 
 const useAdvicePrices = (info) => {
 
@@ -16,20 +23,20 @@ const useAdvicePrices = (info) => {
 	const brand = activeBrand?.[category];
 	const concept = activeConcept?.[category]?.[brand];
 
-	const handleSetLastAdviceValue = (value) => setLastAdviceValue(
-		{
-			...lastAdviceValue,
-			[category]: {
-				...lastAdviceValue?.[category],
-				[brand]: {
-					...lastAdviceValue?.[category]?.[brand],
-					[concept]: {
-						...lastAdviceValue?.[category]?.[brand]?.[concept],
-						[info.EAN_CE]: value
-					}
-				}
-			}
-		}
+	const handleSetLastAdviceValue = (value) => setLastAdviceValue(propertySetter(lastAdviceValue, value, true, category, brand, concept, info.EAN_CE)
+		// {
+		// 	...lastAdviceValue,
+		// 	[category]: {
+		// 		...lastAdviceValue?.[category],
+		// 		[brand]: {
+		// 			...lastAdviceValue?.[category]?.[brand],
+		// 			[concept]: {
+		// 				...lastAdviceValue?.[category]?.[brand]?.[concept],
+		// 				[info.EAN_CE]: value
+		// 			}
+		// 		}
+		// 	}
+		// }
 	);
 	const handleLastAdviceValue = lastAdviceValue?.[category]?.[brand]?.[concept]?.[info.EAN_CE];
 
@@ -37,6 +44,9 @@ const useAdvicePrices = (info) => {
 	const [adviceHigh, setAdviceHigh] = useState(handleLastAdviceValue?.high || info?.defaultAdviceHigh[adviceMode] || 0);
 	const [adviceLow, setAdviceLow] = useState(handleLastAdviceValue?.low || info?.defaultAdviceLow[adviceMode] || 0);
 
+	const saveAdvicePrices = async () => {
+		await myFetch("POST", "/api/settings/nickname/modify-concept-nickname", {ean: info.EAN_CE, adviceH: adviceHigh, adviceL: currentLow});
+	};
 
 	const handleHighChange = e => {
 		setAdviceHigh(e.floatValue);
@@ -58,7 +68,7 @@ const useAdvicePrices = (info) => {
 		handleSetLastAdviceValue({high: adviceHigh, low: currentLow});
 	}, [adviceHigh, currentLow]);
 
-	return {adviceHigh, handleHighChange, adviceLow: currentLow, handleLowChange};
+	return {adviceHigh, handleHighChange, adviceLow: currentLow, handleLowChange, saveAdvicePrices};
 };
 
 export default useAdvicePrices;

@@ -10,6 +10,7 @@ export const CLEAR_ADVICE = "ADVICE_STORE/CLEAR_ADVICE";
 
 
 
+
 export const UPDATE_CONFIG = "CONFIG/UPDATE_CONFIG";
 
 const defaultConfig = {
@@ -22,7 +23,8 @@ const defaultConfig = {
 	lastActiveBrand: {},
 	lastActiveConcept: {},
 	lastAdviceValue: {},
-	prefetch: false
+	prefetch: false,
+	triggerSaveAdvicePrices: false
 };
 
 export const initialState = {
