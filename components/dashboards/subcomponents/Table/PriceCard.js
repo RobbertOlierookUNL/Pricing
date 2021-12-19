@@ -1,3 +1,4 @@
+import NumberFormat from "react-number-format";
 import React, { useState, useEffect } from "react";
 
 import {ballet_pink, bottle_green, sunset_red, unilever_blue, denim_blue, orchid_purple} from "../../../../lib/colors";
@@ -5,8 +6,8 @@ import { collectConcept } from "../../../../util/reducers";
 import { setDecimals } from "../../../../util/functions";
 import { useStore } from "../../../../lib/Store";
 import EuroFormat from "../../../EuroFormat";
-import NumberFormat from "react-number-format";
 import advices from "../../../../pages/advices";
+import useCategory from "../../../../util/useCategory";
 import useConfig from "../../../../util/useConfig";
 import usePriceInfo from "../../../../util/usePriceInfo";
 
@@ -20,10 +21,12 @@ import usePriceInfo from "../../../../util/usePriceInfo";
 
 
 
-const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections, isAlreadyInAdvice}) => {
+
+const PriceCard = ({price, getLocalState, advice, adviceStub, headerSelections, isAlreadyInAdvice, umfeld}) => {
 	const [intervalMode] = useConfig("intervalMode");
 	const [deltaMode] = useConfig("deltaMode");
 	const PriceInfo = usePriceInfo();
+
 
 
 	const [{grabAdvice}, adviceDispatch] = useStore();
@@ -34,9 +37,9 @@ const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections, isAl
 	const inAdvice = thisIsAlreadyInAdvice;
 
 
-	const couldBeAdviced = price.rsp && (price.rsp < advice);
+	const couldBeAdviced = price.rsp && (price.rsp < advice) && price.volume && !umfeld;
 
-	const [localState, setLocalState] = useState(false);
+	const [localState, setLocalState] = getLocalState;
 
 	const columnSelect = retailerSelect[price.retailer];
 	const selectedForAdvice = couldBeAdviced && localState;
@@ -62,9 +65,6 @@ const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections, isAl
 		}
 	}, [grabAdvice]);
 
-	useEffect(() => {
-	  setLocalState(rowSelect);
-	}, [rowSelect]);
 
 	useEffect(() => {
 		setLocalState(columnSelect);
@@ -99,7 +99,7 @@ const PriceCard = ({price, advice, adviceStub, rowSelect, headerSelections, isAl
 				    overflow: hidden;
 						width: 100%;
 						height: 100%;
-						${(!price.rsp && !price.volume) ? `background-color: ${ballet_pink.color} !important;` : !price.rsp ? "background-color: #bbb !important;": ""}
+						${(!price.rsp && !price.volume) ? `background-color: ${ballet_pink.color} !important;` : ((!price.rsp || !price.volume) && !umfeld) ? "background-color: #bbb !important;": ""}
 						${selectedForAdvice ? `background-color: ${denim_blue.color} !important` : ""};
 						${selectedForAdvice && inAdvice ? `background-color: ${orchid_purple.color} !important` : ""};
 

@@ -1,10 +1,20 @@
 import NumberFormat from "react-number-format";
 import React from "react";
 
-import { setDecimals } from "./functions";
+import {
+	bottle_green,
+	denim_blue,
+	sunset_red,
+	turmeric_yellow
+} from "../lib/colors";
+import { isDateBeforeDate, setDecimals } from "./functions";
 import EuroFormat from "../components/EuroFormat";
+import getDateStrings from "./api-functions/get-date-strings";
 import useColorScale from "./useColorScale";
 import useConfig from "./useConfig";
+
+
+
 
 
 
@@ -92,6 +102,49 @@ const usePriceInfo = () => {
               font-weight: bold;
             } */
       `}</style>
+				</>
+			);
+		};
+		return PriceInfo;
+	}
+	case "lastMeasurement": {
+		const PriceInfo = ({price, advice, selectedForAdvice}) => {
+			const mDate = price.LastMeasurementDate;
+			const {yesterdayString, lastTwoWeekString} = getDateStrings();
+			const recent = !isDateBeforeDate(mDate, yesterdayString);
+			const fair = isDateBeforeDate(mDate, yesterdayString);
+			const oldDate = isDateBeforeDate(mDate, lastTwoWeekString);
+
+			return (
+				<>
+					<div className="override">
+						{mDate}
+					</div>
+					<style jsx>{`
+						.override {
+							color: ${recent ? "black" : oldDate ? sunset_red.color : turmeric_yellow.color};
+							font-weight: ${recent ? "inherit" : "bold"};
+						}
+			`}</style>
+				</>
+			);
+		};
+		return PriceInfo;
+	}
+	case "dataSource": {
+		const PriceInfo = ({price, advice, selectedForAdvice}) => {
+			const source = price.DataSource;
+
+			return (
+				<>
+					<div className="override">
+						{source}
+					</div>
+					<style jsx>{`
+						.override {
+							color: ${source === "IPV" ? denim_blue.color : bottle_green.color};
+						}
+			`}</style>
 				</>
 			);
 		};

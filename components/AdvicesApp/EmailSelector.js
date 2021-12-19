@@ -1,6 +1,8 @@
 import React from "react";
 
+import { propertySetter } from "../../util/functions";
 import useConfig from "../../util/useConfig";
+
 
 
 const EmailSelector = ({category, retailer, data}) => {
@@ -18,11 +20,19 @@ const EmailSelector = ({category, retailer, data}) => {
 		(e.retailer === retailer)
 	);
 
+	React.useEffect(() => {
+		propertySetter(info, first_name, false, category, retailer, "name");
+		propertySetter(info, kamEmail, false, category, retailer, "email");
+		setInfo(info);
+	}, [kamEmail, first_name, category, retailer]);
+
 	const handleNameChange = e => {
-		setInfo({...info, [category]: {...info?.[category], [retailer]: {...info?.[category]?.[retailer], name: e.target.value}}});
+		propertySetter(info, e.target.value, false, category, retailer, "name");
+		setInfo(info);
 	};
 	const handleEmailChange = e => {
-		setInfo({...info, [category]: {...info?.[category], [retailer]: {...info?.[category]?.[retailer], email: e.target.value}}});
+		propertySetter(info, e.target.value, false, category, retailer, "email");
+		setInfo(info);
 	};
 
 	const {name, email} = info?.[category]?.[retailer] || {};
@@ -32,9 +42,9 @@ const EmailSelector = ({category, retailer, data}) => {
 		<div>
 			<div className="ret">{retailer}</div>
 			<div className="name"><i>Name:</i></div>
-			<input type="text" value={name || first_name || ""} onChange={handleNameChange}/>
+			<input type="text" value={name || ""} onChange={handleNameChange}/>
 			<span><i>Email:</i></span>
-			<input type="text" value={email || kamEmail || ""} onChange={handleEmailChange}/>
+			<input type="text" value={email || ""} onChange={handleEmailChange}/>
 			<style jsx>{`
 				.ret {
 					width: 105px;

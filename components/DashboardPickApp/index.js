@@ -1,21 +1,31 @@
 import React from "react";
-import Sider from "../Sider";
+
+import { allBrandsText } from "../../lib/config";
+import {
+	useBrandsFromCategory,
+	useCategoriesFromCategory,
+	useConceptsFromBrand,
+	useDataFromConcept,
+	useMutations
+} from "../../util/useSwr-hooks";
 import Background from "../Background";
-import View from "../View";
-
-import PickCardLayout from "../PickCards/PickCardLayout";
 import PickCard from "../PickCards/PickCard";
-
-import candyPinkBackgrund from "../../res/candy-pink-background.jpg";
-import kansen from "../../res/kansen.jpg";
-import rsv from "../../res/rsv.jpg";
-import low from "../../res/low.png";
-import erosie from "../../res/erosie.jpg";
+import PickCardLayout from "../PickCards/PickCardLayout";
+import Sider from "../Sider";
+import View from "../View";
 import advice from "../../res/advice.jpg";
-import plan from "../../res/plan.jpg";
-
-
+import candyPinkBackgrund from "../../res/candy-pink-background.jpg";
+import catman from "../../res/catman.jpg";
+import settings from "../../res/settings.png";
+import updown from "../../res/updown.jpg";
 import useCardRouter from "../../util/useCardRouter";
+import useCategory from "../../util/useCategory";
+import useConfig from "../../util/useConfig";
+import usePrefetchCategory from "../../util/usePrefetchCategory";
+import usePrefetcher from "../../util/usePrefetcher";
+
+
+
 
 
 
@@ -23,39 +33,25 @@ import useCardRouter from "../../util/useCardRouter";
 const DashboardPickApp = () => {
 
 	const goToRoute = useCardRouter("category");
+	const goToSuperRoute = useCardRouter("");
+	const category = useCategory();
+	// usePrefetchCategory(category);
+	const umfeld = category === "umfeld";
 
-	const testmail = async () => {
-		try {
-
-			const res = await fetch("/api/email/test", {
-				method: "PATCH",
-				body: JSON.stringify({
-					data: "data"
-				}),
-				headers: {
-					"Content-type": "application/json; charset=UTF-8"
-				}
-			});
-
-			const json = await res.json();
-			if (!res.ok) throw Error(json.message);
-
-		} catch (e) {
-			throw Error(e.message);
-		}
-	};
 
 	return (
 		<Background image={candyPinkBackgrund}>
 			<Sider title="RSP Monitor"/>
 			<View>
-				<PickCardLayout type="141">
-					<PickCard type="first" title="Planning" image={plan} route={goToRoute("schedule")} total={17}/>
-					<PickCard title="Gepland" image={rsv} route={goToRoute("plan")}/>
-					<PickCard title="Erosie" image={erosie} route={goToRoute("erosion")} total={34} alert={6}/>
-					<PickCard title="Kansen" image={kansen} route={goToRoute("chances")}/>
-					<PickCard title="Laagstand" image={low} route={testmail}/>
-					<PickCard type="sixth" title="Adviezen" image={advice} route={goToRoute("advices")}/>
+				<PickCardLayout type={umfeld ? "2x1" : "2x2"}>
+					<PickCard title="Marktoverzicht" image={catman} route={goToRoute("overview")}/>
+					<PickCard title="Mutaties" image={updown} route={goToRoute("mutations")}/>
+					{umfeld ||
+						<>
+							<PickCard title="Instellingen" image={settings} route={goToRoute("settings")}/>
+							<PickCard title="Adviezen" image={advice} route={goToSuperRoute("advices")}/>
+						</>
+					}
 				</PickCardLayout>
 			</View>
 		</Background>

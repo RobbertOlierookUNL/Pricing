@@ -1,6 +1,31 @@
+import * as FileSaver from "file-saver";
 
 export const saveParse = (toParse, defaultVal = []) => {
-	return toParse ? JSON.parse(toParse) : defaultVal;
+	try {
+		const parsed = toParse ? JSON.parse(toParse) : defaultVal;
+		return parsed;
+	} catch (e) {
+		return toParse;
+	}
+};
+
+export const myFetch = async (method, url, body) => {
+	try {
+		const res = await fetch(url, {
+			method,
+			body: JSON.stringify({
+				...body
+			}),
+			headers: {
+				"Content-type": "application/json; charset=UTF-8"
+			}
+		});
+		const json = await res.json();
+		if (!res.ok) throw Error(json.message);
+		return json;
+	} catch (e) {
+		throw Error(e.message);
+	}
 };
 
 export const setDecimals = (num, dec) => {
@@ -74,6 +99,46 @@ export const makeRetailSalesPrice = (value) => {
 	};
 
 	return secondLastDecimalSwitcher(lastDecimalSwitcher(float));
+};
+
+export const propertySetter = (object, value, clone, ...nests) => {
+	const thisObject = clone ? {...object} : object;
+	let ref = thisObject;
+	for (const [idx, nest] of nests.entries()) {
+		if (idx+1 === nests.length) {
+			ref[nest]=value;
+		} else if (!ref[nest]) {
+			ref[nest]={};
+		}
+		ref = ref[nest];
+	}
+	return thisObject;
+};
+
+function s2ab(s) {
+	var buf = new ArrayBuffer(s.length);
+	var view = new Uint8Array(buf);
+	for (var i=0; i!=s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
+	return buf;
+}
+
+export const isDateBeforeDate = (date1, date2) => {
+	if (date1&&date2) {
+		return new Date(new Date(...date1.split("-")).toDateString()) < new Date(new Date(...date2.split("-")).toDateString());
+	}
+	return false;
+};
+
+export const excelDownloader = (excelBuffer, fileName) => {
+	const fileExtension = ".xlsx";
+	console.log({excelBuffer, fileName});
+	// const blob = new Blob([excelBuffer], {type: fileType});
+	var blob = new Blob([s2ab(atob(excelBuffer))], {
+		type: ""
+	});
+	console.log({excelBuffer, fileName, blob});
+
+	FileSaver.saveAs(blob, fileName + fileExtension);
 };
 
 export const lastTwoDigits = (string) => {

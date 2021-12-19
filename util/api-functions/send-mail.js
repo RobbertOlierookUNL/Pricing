@@ -20,7 +20,7 @@ const sendMail = async (excelBuffer, transporter, info, retailer, category) => {
 					}
 				],
 				from: {
-					name: "Adviesbot ✔",
+					name: "bot, advies",
 					email: process.env.ADVICEBOT_USER,
 				},
 				subject: `${category} - ${retailer} | Vrijblijvend advies`,

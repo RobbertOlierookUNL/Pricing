@@ -16,6 +16,8 @@ import GenericTitle from "../dashboards/subcomponents/GenericTitle";
 import Sider from "../Sider";
 import View from "../View";
 import candyPinkBackgrund from "../../res/candy-pink-background.jpg";
+import SnackbarProvider from "react-simple-snackbar";
+
 
 
 
@@ -54,24 +56,26 @@ const AdvicesApp = () => {
 		<Background image={candyPinkBackgrund}>
 			<Sider title="RSP Monitor"/>
 			<View>
-				<DashboardContainer type="with-header-and-footer">
-					<DashboardHeader>
-						<GenericTitle>
+				<SnackbarProvider>
+					<DashboardContainer type="with-header-and-footer">
+						<DashboardHeader>
+							<GenericTitle>
 							Adviezen
-						</GenericTitle>
-						<div className="close-button">
-							<CloseButton onClick={clear}/>
-						</div>
-					</DashboardHeader>
-					<DashboardContent>
-						<AdviceList data={advicePerRetailerAndCategory}/>
-					</DashboardContent>
-					<DashboardFooter>
-						<DashboardFooterButtonContainer>
-							<AdviceAppButtons/>
-						</DashboardFooterButtonContainer>
-					</DashboardFooter>
-				</DashboardContainer>
+							</GenericTitle>
+							<div className="close-button">
+								<CloseButton onClick={clear}/>
+							</div>
+						</DashboardHeader>
+						<DashboardContent>
+							<AdviceList data={advicePerRetailerAndCategory}/>
+						</DashboardContent>
+						<DashboardFooter>
+							<DashboardFooterButtonContainer>
+								<AdviceAppButtons/>
+							</DashboardFooterButtonContainer>
+						</DashboardFooter>
+					</DashboardContainer>
+				</SnackbarProvider>
 			</View>
 			<style jsx>{`
 				.close-button {

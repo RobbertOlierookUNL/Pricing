@@ -10,7 +10,7 @@ import useOverflowDetector from "../../../util/useOverflowDetector";
 
 
 
-const ConceptSider = ({brands, brandsIsLoading, concepts, conceptsIsLoading}) => {
+const ConceptSider = ({brands, brandsIsLoading, defaultConcept, defaultBrand, concepts, conceptsIsLoading}) => {
 	// const [activeConcept, setActiveConcept] = useContext(ActiveConcept);
 	// const [activeBrand, setActiveBrand] = useContext(ActiveBrand);
 	const category = useCategory();
@@ -23,9 +23,6 @@ const ConceptSider = ({brands, brandsIsLoading, concepts, conceptsIsLoading}) =>
 	const brand = activeBrand?.[category];
 	const concept = activeConcept?.[category]?.[brand];
 
-	const defaultConcept = brand === allBrandsText ? allBrandsText : concepts?.[0];
-	const defaultBrand = brands?.[0];
-
 	const handleSetActiveBrand = value => setActiveBrand({...activeBrand, [category]: value});
 	const handleSetActiveConcept = value => setActiveConcept({...activeConcept, [category]: {...activeConcept?.[category], [brand]: value}});
 
@@ -36,7 +33,7 @@ const ConceptSider = ({brands, brandsIsLoading, concepts, conceptsIsLoading}) =>
 	const brandSetter = () => handleSetActiveBrand(defaultBrand);
 
 	const brandItems = !brandsIsLoading && Array.isArray(brands) && [allBrandsText, ...brands];
-	const conceptItems = brand === allBrandsText ? [allBrandsText] : !conceptsIsLoading && Array.isArray(concepts) && [allConceptsFromBrandText(brand), ...concepts];
+	const conceptItems = brand === allBrandsText ? [allBrandsText] : !conceptsIsLoading && Array.isArray(concepts) && [...new Set([allConceptsFromBrandText(brand), ...concepts])];
 
 	return (
 		<>

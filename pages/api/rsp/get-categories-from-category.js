@@ -11,8 +11,10 @@ const handler = async (req, res) => {
 		try {
 
 			if (req.method === "GET") {
-				const results = await getCategories(category);
-				return res.json(results);
+				if (category !== "umfeld") {
+					const results = await getCategories(category);
+					return res.json(results);
+				} else return res.json([category]);
 
 			} else {
 				res.status(400).json({ message: `Does not support a ${req.method} request` });
@@ -22,7 +24,7 @@ const handler = async (req, res) => {
 			res.status(500).json({ message: e.message});
 		}
 	} else {
-		res.status(400).json({ message: "No info yet" });
+		res.status(204).json("no info yet");
 	}
 };
 

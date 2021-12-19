@@ -27,6 +27,12 @@ a {
     2px 2px 5px black,
     1px 2px 4px black;
 }
+.heavy-shadow-white {
+  text-shadow:
+    1px 1px 3px white,
+    2px 2px 5px white,
+    1px 2px 4px white;
+}
 .shadow {
   box-shadow: 1px 1px 5px #333;
 }
@@ -112,6 +118,15 @@ a {
 .pick-card:hover {
   filter: grayscale(0%);
   transform: scale(1.1);
+}
+
+.disable {
+  filter: grayscale(100%) brightness(50%) !important;
+  cursor: auto !important;
+}
+.disable:hover {
+  filter: grayscale(100%) brightness(50%) !important;
+  transform: scale(1);
 }
 .pick-2x1 {
   grid-template: 500px / 200px 200px;

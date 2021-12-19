@@ -57,7 +57,7 @@ const createExcel = (arrayOfObjects, hasNasaColumn) => {
 	range.s.c = 1;
 	range.e.c = endColumn;
 	const endRow = {...range.e}.r;
-	range.e.r += 7;
+	range.e.r += 9;
 	const textRow = range.e.r;
 	// console.log({range});
 	tl["!ref"] = XLSX.utils.encode_range(range);
@@ -66,7 +66,7 @@ const createExcel = (arrayOfObjects, hasNasaColumn) => {
 		:
 		[{wch: 2}, {wch: mainCharacters}, {wch: descriptionCharacters}, {wch: mainCharacters}, {wch: mainCharacters}, {wch: mainCharacters}];
 
-	tl["!merges"] = [{s: {c: 1, r: textRow - 3}, e: {c: endColumn, r: textRow}}];
+	tl["!merges"] = [{s: {c: 1, r: textRow - 5}, e: {c: endColumn, r: textRow}}];
 
 	const styledTl = {};
 	Object.entries(tl).map(([key, value]) => {
@@ -152,16 +152,22 @@ const createExcel = (arrayOfObjects, hasNasaColumn) => {
 
 		styledTl[key] = value;
 	});
-	const textKey = XLSX.utils.encode_cell({c: 1, r: textRow-3});
-	const textKey2 = XLSX.utils.encode_cell({c: 1, r: textRow-2});
-	const textKey3 = XLSX.utils.encode_cell({c: 1, r: textRow-1});
-	const textKey4 = XLSX.utils.encode_cell({c: 1, r: textRow});
+	const textKey = XLSX.utils.encode_cell({c: 1, r: textRow-5});
+	const textKey2 = XLSX.utils.encode_cell({c: 1, r: textRow-4});
+	const textKey3 = XLSX.utils.encode_cell({c: 1, r: textRow-3});
+	const textKey4 = XLSX.utils.encode_cell({c: 1, r: textRow-2});
+	const textKey5 = XLSX.utils.encode_cell({c: 1, r: textRow-1});
+	const textKey6 = XLSX.utils.encode_cell({c: 1, r: textRow});
+
 
 
 	styledTl[textKey] = {
 		v: excelText,
 		t: "s",
 		s: {
+			font: {
+				sz: 9.5,
+			},
 			alignment: {
 				wrapText: "1",
 			},
@@ -185,6 +191,20 @@ const createExcel = (arrayOfObjects, hasNasaColumn) => {
 		}
 	};
 	styledTl[textKey4] = {
+		s: {
+			border: {
+				left: { style: "thick", color: { rgb: unilever_blue.color.slice(1) } },
+			}
+		}
+	};
+	styledTl[textKey5] = {
+		s: {
+			border: {
+				left: { style: "thick", color: { rgb: unilever_blue.color.slice(1) } },
+			}
+		}
+	};
+	styledTl[textKey6] = {
 		s: {
 			border: {
 				left: { style: "thick", color: { rgb: unilever_blue.color.slice(1) } },

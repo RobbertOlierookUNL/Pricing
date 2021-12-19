@@ -15,7 +15,7 @@ export const UPDATE_CONFIG = "CONFIG/UPDATE_CONFIG";
 const defaultConfig = {
 	retailerMode: false,
 	deltaMode: false,
-	adviceMode: "directOpportunities",
+	adviceMode: "pushAdvice",
 	intervalMode: "weekRsp",
 	infoMode: "relativePrice",
 	adviceInfo: {},
@@ -101,13 +101,18 @@ export const adviceStoreReducer = (state, action) => {
 			...state.advice?.[action.category],
 		};
 		const alreadyEmptied = [];
-		for (const singleAdvice of state.tempArr) {
-			if (!alreadyEmptied.some(e => e === singleAdvice.ean)) {
-				newAdvice[singleAdvice.ean] = {};
-				alreadyEmptied.push(singleAdvice.ean);
+		if (state.tempArr.length > 0) {
+			for (const singleAdvice of state.tempArr) {
+				if (!alreadyEmptied.some(e => e === singleAdvice.ean)) {
+					newAdvice[singleAdvice.ean] = {};
+					alreadyEmptied.push(singleAdvice.ean);
+				}
+				if (singleAdvice.retailer) {
+					newAdvice[singleAdvice.ean][singleAdvice.retailer] = {...singleAdvice, brand: action.brand, concept: action.concept, category: action.category};
+				}
 			}
-			newAdvice[singleAdvice.ean][singleAdvice.retailer] = {...singleAdvice, brand: action.brand, concept: action.concept, category: action.category};
 		}
+
 		return {
 			grabAdvice: false,
 			nextStep: false,
@@ -123,7 +128,10 @@ export const adviceStoreReducer = (state, action) => {
 	case NEXT_STEP:
 		return {...state, grabAdvice: false, nextStep: true};
 	case COLLECT_CONCEPT:
-		return {...state, tempArr: [...state.tempArr, action.value]};
+		if (action.value) {
+			return {...state, tempArr: [...state.tempArr, action.value]};
+		}
+		else return state;
 	case UPDATE_ADVICE: {
 		const data  = state?.advice?.[action.category];
 		const newData = {...data};

@@ -1,5 +1,7 @@
-import sendMultipleMails from "../../../util/api-functions/send-multiple-mails";
 import axios from "axios";
+
+import iterateAdvices from "../../../util/api-functions/iterate-advices";
+
 
 export default async function (req, res) {
 	const { advice, info } = req.body;
@@ -24,7 +26,7 @@ export default async function (req, res) {
 		}),
 	});
 
-	sendMultipleMails(transporter, advice, info);
+	iterateAdvices(transporter, advice, info);
 
 	return res.json({done: true});
 

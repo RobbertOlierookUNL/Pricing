@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 
 import useRetailerSorter from "util/useRetailerSorter";
 
+import { collectConcept } from "../../../../util/reducers";
+import { useStore } from "../../../../lib/Store";
 import InfoCard from "./InfoCard";
 import PriceCard from "./PriceCard";
 import useAdvicePrices from "../../../../util/useAdvicePrices";
@@ -13,12 +15,32 @@ import useConfig from "../../../../util/useConfig";
 
 
 
-const TableRow = ({entry, even, headerSelections, isAlreadyInAdvice, doSelectAll}) => {
+
+
+const TableRow = ({entry, even, headerSelections, isAlreadyInAdvice, doSelectAll, umfeld}) => {
 	const {prices, ...info} = entry;
 	const [retailerMode] = useConfig("retailerMode");
 	const {adviceHigh, handleHighChange, adviceLow, handleLowChange} = useAdvicePrices(info);
 	const {sortedData} = useRetailerSorter(prices, retailerMode);
 
+	const [localStates, setLocalStates] = useState(Array(sortedData.length).fill(false));
+	const getLocalState = idx => {
+		const localState = localStates[idx];
+		const setLocalState = value => {
+			const copy = [...localStates];
+			copy[idx] = value;
+			setLocalStates(copy);
+		};
+		return [localState, setLocalState];
+	};
+	const noneSelected = localStates.reduce((acc, val) => !(acc || val));
+	const [{grabAdvice}, adviceDispatch] = useStore();
+
+	useEffect(() => {
+		if (grabAdvice && noneSelected) {
+			adviceDispatch(collectConcept({ean: info.EAN_CE}));
+		}
+	}, [grabAdvice]);
 	const {value, done, execute} = doSelectAll;
 
 	//// TODO: Make dynamic
@@ -32,12 +54,14 @@ const TableRow = ({entry, even, headerSelections, isAlreadyInAdvice, doSelectAll
 		if ((value !== "unset") && (done === false)) {
 			execute();
 			setRowSelect(value);
+			setLocalStates(Array(sortedData.length).fill(value));
 		}
 	}, [done]);
 
 
 	const handleRowSelect = () => {
 		setRowSelect(!rowSelect);
+		setLocalStates(Array(sortedData.length).fill(!rowSelect));
 	};
 
 	return (
@@ -49,18 +73,22 @@ const TableRow = ({entry, even, headerSelections, isAlreadyInAdvice, doSelectAll
 				handleHighChange={handleHighChange}
 				handleLowChange={handleLowChange}
 				adviceLow={adviceLow}
-				adviceHigh={adviceHigh}/>
-			{sortedData.map(price => {
+				adviceHigh={adviceHigh}
+				umfeld={umfeld}
+			/>
+			{sortedData.map((price, idx) => {
 				const adviceStub = {ean: info.EAN_CE, description: info.Artikelomschrijving, nasa: info.NASA};
 				return (
 					<PriceCard
 						key={price.retailer}
+						getLocalState={getLocalState(idx)}
 						adviceStub={adviceStub}
 						price={price}
-						advice={price.cap === "H" ? adviceHigh : adviceLow}
+						advice={price.adviceCap === "H" ? adviceHigh : adviceLow}
 						isAlreadyInAdvice={isAlreadyInAdvice}
-						rowSelect={rowSelect}
+						umfeld={umfeld}
 						headerSelections={headerSelections}/>
+
 
 				);
 			})}

@@ -35,10 +35,12 @@ const preFetch = (baseUrl, params) => {
 	return results;
 };
 
-function* preFetchAll(doSomething, category, allBrands=[], allConcepts=[], thisBrand, thisConcept, done, cat){
+function* preFetchAll(doSomething, category, allBrands=[], allConcepts=[], conceptMap, thisBrand, thisConcept, done, cat){
 	if (doSomething) {
 		const concepts = (thisBrand === allBrandsText) ? allConcepts : [...allConcepts, allConceptsFromBrandText(thisBrand)];
-		for (const concept of concepts) {
+		for (const cc of concepts) {
+			const c = conceptMap[cc];
+			const concept = Array.isArray(c) ? JSON.stringify(c) : c;
 			if (concept != thisConcept) {
 				yield preFetch("rsp/get-rsp-info-from-concept", {category, brand: thisBrand, concept, cat});
 				console.log(`PREFETCHER | prefetched ${thisBrand} ${concept}`);
@@ -46,11 +48,16 @@ function* preFetchAll(doSomething, category, allBrands=[], allConcepts=[], thisB
 		}
 		for (const brand of [...allBrands, allBrandsText]) {
 			if (brand != thisBrand) {
-				const concepts = yield preFetch("rsp/get-all-concepts-from-brand", {category, brand, cat});
+				const conceptMap = yield preFetch("rsp/get-all-concepts-from-brand", {category, brand, cat});
+				const mConceptMap = {...conceptMap};
+				mConceptMap[allConceptsFromBrandText(brand)] = allConceptsFromBrandText(brand);
+				const concepts = Object.keys(mConceptMap);
 				console.log(`PREFETCHER | prefetched ${brand}`);
 
-				const allConcepts = brand === allBrandsText ? concepts : [...concepts, allConceptsFromBrandText(brand)];
-				for (const concept of allConcepts) {
+				const allConcepts = brand === allBrandsText ? concepts : [...concepts];
+				for (const cc of allConcepts) {
+					const c = mConceptMap[cc];
+					const concept = Array.isArray(c) ? JSON.stringify(c) : c;
 					yield preFetch("rsp/get-rsp-info-from-concept", {category, brand, concept, cat});
 					console.log(`PREFETCHER | prefetched ${brand} ${concept}`);
 
@@ -69,13 +76,13 @@ function* preFetchAll(doSomething, category, allBrands=[], allConcepts=[], thisB
 const prefetcher = makeSingle(preFetchAll);
 
 
-const usePrefetcher = (loading, thisCategories, thisBrand, thisConcept, allBrands, allConcepts, data, cat) => {
+const usePrefetcher = (loading, thisCategories, thisBrand, thisConcept, conceptMap, allBrands, allConcepts, data, cat) => {
 	const done = React.useRef(false);
 	React.useEffect(() => {
 		if (!done.current && !loading && Array.isArray(allBrands) && Array.isArray(allConcepts)) {
 			const category = JSON.stringify(thisCategories);
 			console.log({tag: "prefetcher", data});
-			prefetcher(true, category, allBrands, allConcepts, thisBrand, thisConcept, done, cat);
+			prefetcher(true, category, allBrands, allConcepts, conceptMap, thisBrand, thisConcept, done, cat);
 		}
 	}, [loading, Array.isArray(allBrands), Array.isArray(allConcepts)]);
 	React.useEffect(() => {

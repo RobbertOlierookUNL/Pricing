@@ -1,14 +1,16 @@
 import NumberFormat from "react-number-format";
 import React from "react";
 
-import { unilever_blue } from "../../../lib/colors";
+import { bottle_green, sunset_red, unilever_blue } from "../../../lib/colors";
 import EuroFormat from "../../EuroFormat";
 import SkeletonRows from "../subcomponents/Table/SkeletonRows";
+import useConfig from "../../../util/useConfig";
+
+
 
 
 
 const MutationRow = ({description, brand, concept, ean, retailer, oldPrice, newPrice}) => {
-	console.log({description, brand});
 	const diff = newPrice - oldPrice;
 	const diffPer = diff / oldPrice * 100;
 	return (
@@ -20,7 +22,7 @@ const MutationRow = ({description, brand, concept, ean, retailer, oldPrice, newP
 			<div className="cell">{retailer}</div>
 			<div className="cell"><EuroFormat value={oldPrice}/></div>
 			<div className="cell"><EuroFormat value={newPrice}/></div>
-			<div className="cell">
+			<div className="cell colored">
 				<NumberFormat
 					thousandSeparator="."
 					decimalSeparator=","
@@ -30,7 +32,7 @@ const MutationRow = ({description, brand, concept, ean, retailer, oldPrice, newP
 					prefix={(diff > 0) ? "+€" : "€"}
 					value={diff}
 				/></div>
-			<div className="cell">
+			<div className="cell colored">
 				<NumberFormat
 					thousandSeparator="."
 					decimalSeparator=","
@@ -43,12 +45,11 @@ const MutationRow = ({description, brand, concept, ean, retailer, oldPrice, newP
 				/></div>
 			<style jsx>{`
           .row {
-            height: 17px;
             display: inline-grid;
             /* display: grid; */
-            grid-template-columns: 10ch 20ch 14ch 40ch 10ch 8ch 8ch 8ch 8ch;
+            grid-template-columns: 1fr 2fr 14ch 4fr 12ch 8ch 8ch 8ch 8ch;
             background-color: #eee;
-            width: fit-content;
+            width: 100%;
           }
           .row:nth-child(2n) {
             background-color: #ddd;
@@ -72,13 +73,20 @@ const MutationRow = ({description, brand, concept, ean, retailer, oldPrice, newP
           .cell:last-child {
             border-right: 0;
           }
+          .colored {
+            color: ${diff > 0 ? bottle_green.color
+			: sunset_red.color};
+          }
 
       `}</style>
 		</div>
 	);
 };
 
-const MutationTable = ({data, loadingState, errorState}) => {
+const MutationTable = ({data, loadingState, errorState, specificRetailer}) => {
+	const [retailerMode] = useConfig("retailerMode");
+	console.log({specificRetailer, retailerMode});
+
 	function brandCompare( a, b ) {
 		if ( a.brand < b.brand ){
 			return -1;
@@ -97,14 +105,32 @@ const MutationTable = ({data, loadingState, errorState}) => {
 		}
 		return 0;
 	}
+	function retailerCompare( a, b ) {
+		if ( a.retailer < b.retailer ){
+			return -1;
+		}
+		if ( a.retailer > b.retailer ){
+			return 1;
+		}
+		return 0;
+	}
+	function retailerFilter(a) {
+		if (specificRetailer) {
+			return a.retailer === specificRetailer;
+		}
+		if (!retailerMode) {
+			return a.priority;
+		}
+		return true;
+	}
 	return (
 		<div>
 			{loadingState && <SkeletonRows/>}
-			{(!loadingState && !errorState && Array.isArray(data)) && data.sort(conceptCompare).sort(brandCompare).map((entry, idx) => (
+			{(!loadingState && !errorState && Array.isArray(data)) && data.filter(retailerFilter).sort(retailerCompare).sort(conceptCompare).sort(brandCompare).map((entry, idx) => (
       		<MutationRow {...entry} key={idx}/>
 			))}
 			<style jsx>{`
-        font-size: 0.7em;
+        font-size: 0.9em;
       `}</style>
 		</div>
 	);

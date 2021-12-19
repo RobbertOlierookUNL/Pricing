@@ -18,6 +18,7 @@ const TableBody = ({data, loadingState, errorState, headerSelections, doSelectAl
 	const [state] = useStore();
 	const {advice} = state;
 	const category = useCategory();
+	const umfeld = category === "umfeld";
 
 	const isAlreadyInAdvice = (ean, retailer) => {
 		return !!advice?.[category]?.[ean]?.[retailer];
@@ -36,6 +37,7 @@ const TableBody = ({data, loadingState, errorState, headerSelections, doSelectAl
 					key={entry.EAN_CE}
 					isAlreadyInAdvice={isAlreadyInAdvice}
 					doSelectAll={doSelectAll}
+					umfeld={umfeld}
 				/>)}
 		</div>
 	);
