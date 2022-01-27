@@ -29,22 +29,20 @@ const InfoCard = ({info, even, adviceHigh, handleHighChange, adviceLow, handleLo
 	const prefix = isMoney ? "€" : "";
 	const thouSep = infoinfo === "EAN" ? "" : ".";
 	const [isMenuShown, setIsMenuShown] = React.useState(false);
-	const ref = React.useRef();
-
-
+	const openContextMenu = e => {
+		e.preventDefault();
+		setIsMenuShown(true);
+	};
+	const closeContextMenu = e => {
+		e.preventDefault();
+		setIsMenuShown(false);
+	};
 	return (
 		<>
-			{/* <ContextMenu
-				isOpenAfterInteraction={false}
-				trigger={ref}
-				component={<HideSkuMenu ean={info.EAN_CE}/>}
-				isOpen={isMenuShown}
-				setIsOpen={setIsMenuShown}
-				style={{ zIndex: 2, transform: "translate(-114px, -14px)", }}
-
-			/> */}
-
-			<div ref={ref} className={`info-grid ${rowSelect ? "" : "deselect"}`} >
+			{/*isMenuShown && <div onContextMenu={closeContextMenu} className="context-menu">
+				Ean verbergen
+			</div>*/}
+			<div onContextMenu={openContextMenu} className={`info-grid ${rowSelect ? "" : "deselect"}`} >
 				<div className="description clickable" onClick={handleRowSelect}>{info.Artikelomschrijving}</div>
 				<div className="caph clickable" onClick={handleRowSelect}>{umfeld || <><small>CAP H: </small><EuroFormat value={info.CAP_H}/></>}</div>
 				<div className="clickzone clickable" onClick={handleRowSelect}>{umfeld || infoinfo}</div>
@@ -55,6 +53,14 @@ const InfoCard = ({info, even, adviceHigh, handleHighChange, adviceLow, handleLo
 
 			</div>
 			<style jsx>{`
+			.context-menu {
+				position: absolute;
+				z-index: 100;
+				background-color: rgba(255,255,255,0.8);
+				padding: 2px;
+				width: 250px;
+				height: 45px;
+			}
 			.info-grid {
 				padding: 2px;
 				display: grid;

@@ -9,7 +9,9 @@ import useWindowSize from "../util/useWindowSize";
 
 
 
-
+export function reportWebVitals(metric) {
+	console.log(metric);
+}
 
 
 function MyApp({ Component, pageProps }) {

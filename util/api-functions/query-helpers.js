@@ -1,5 +1,28 @@
-import { distanceMaker, makeRetailSalesPrice } from "../functions";
+import getDateStrings from "./get-date-strings";
+
+import {
+	distanceMaker,
+	makeRetailSalesPrice,
+	propertySetterFillArray
+} from "../functions";
 import getAdvicePrices from "./get-advice-prices";
+
+
+export const getNicknameTree = nicknames => {
+	const obj = {};
+	for (const n of nicknames) {
+		propertySetterFillArray(obj, n.concept, false, n.cluster, n.brand, n.nickname);
+	}
+	return obj;
+};
+export const getSavedAdvicePricesMap = savedAdvicePrices => {
+	const map = {};
+	for (const e of savedAdvicePrices) {
+		const {ean, adviceH, adviceL} = e;
+		map[ean] = {adviceH, adviceL};
+	}
+	return map;
+};
 
 export const getCodesFromDetailedProducts = (detailedProducts, validEans, conceptNicknames, categoryInfo) => {
 	const productTableEanSet = new Set();
@@ -44,23 +67,72 @@ export const getCodesFromDetailedProducts = (detailedProducts, validEans, concep
 
 export const getMasterEanMap = (switchIds, eanMap) => {
 	const switchIdToCodes = {};
+	const switchIdToCap = {};
 	const eanToSwitchId = {};
 	const masterEans = [];
 	const mrdrs = [];
 	const eans = [];
+	const relinkSwitchIds = {};
 	for (const id of switchIds) {
-		const {SwitchId, ZcuEanCode, MRDR} = id;
+		if (id.SwitchId == "2214" || id.SwitchId == "2131" ) {
+			console.log("in for loop");
+			console.log(id);
+		}
+		let wrongSwitchId = false;
+		const {SwitchId, ZcuEanCode, MRDR, CAP, timing} = id;
 		const ean = parseInt(ZcuEanCode);
 		const otherMrdrs = eanMap[ean];
 		if (!switchIdToCodes[SwitchId]) {
+			if (id.SwitchId == "2214" || id.SwitchId == "2131" ) {
+				console.log("initiator");
+				console.log(id);
+			}
 			switchIdToCodes[SwitchId] = {eans: [], mrdrs: []};
 		}
-		if (id.Active == 1) {
+		if (id.Active == 1 && MRDR != 0) {
+			if (id.SwitchId == "2214" || id.SwitchId == "2131" ) {
+				console.log("in active if");
+				console.log(id);
+			}
 			switchIdToCodes[SwitchId].active = ean;
+			switchIdToCodes[SwitchId].timing = timing;
+			switchIdToCap[SwitchId] = parseFloat(CAP);
 			masterEans.push(ean);
+			for (const e of [...switchIdToCodes[SwitchId]?.eans, ean]) {
+				const possibleOtherSwitchId = eanToSwitchId?.[e] || switchIdToCodes[SwitchId];
+				if (id.SwitchId == "2214" || id.SwitchId == "2131" ) {
+					console.log(eanToSwitchId);
+					console.log({e});
+					console.log({possibleOtherSwitchId});
+					console.log(id);
+				}
+				if (possibleOtherSwitchId) {
+					const possibleOtherActiveEanTiming = switchIdToCodes[possibleOtherSwitchId]?.timing;
+					if (possibleOtherActiveEanTiming) {
+						if (possibleOtherActiveEanTiming < timing) { //dit is de goede
+
+							relinkSwitchIds[possibleOtherSwitchId] = SwitchId;
+						} else { // die ander was de goede
+							relinkSwitchIds[SwitchId] = possibleOtherSwitchId;
+
+							// wrongSwitchId = true;
+							// const wrongEans = switchIdToCodes[SwitchId]?.eans;
+							// for (const wrongEan of wrongEans) {
+							// 	eanToSwitchId[wrongEan] = possibleOtherSwitchId;
+							// }
+						}
+					}
+				}
+			}
+
 		}
+
 		switchIdToCodes[SwitchId].eans.push(ean);
 		switchIdToCodes[SwitchId].mrdrs.push(MRDR);
+		if (id.SwitchId == "2214" || id.SwitchId == "2131" ) {
+			console.log("set map");
+			console.log({ean, SwitchId});
+		}
 		eanToSwitchId[ean] = SwitchId;
 		eans.push(ean);
 		mrdrs.push(MRDR);
@@ -72,7 +144,15 @@ export const getMasterEanMap = (switchIds, eanMap) => {
 		}
 
 	}
-	return {switchIdToCodes, eanToSwitchId, mrdrs, eans, masterEans} ;
+	console.log({relinkSwitchIds});
+	for (const wrongSwitchId in relinkSwitchIds) {
+		for (const ean in eanToSwitchId) {
+			if (eanToSwitchId[ean] == wrongSwitchId) {
+				eanToSwitchId[ean] = relinkSwitchIds[wrongSwitchId];
+			}
+		}
+	}
+	return {switchIdToCodes, switchIdToCap, eanToSwitchId, mrdrs, eans, masterEans} ;
 };
 
 export const getCodes = products => {
@@ -123,6 +203,12 @@ export const getRetailerMap = retailers => {
 	return retailerToInfo;
 };
 
+export const dateToInt = dateString => {
+	const [y, m, d] = dateString.split("-");
+	const n = (parseInt(y)*10000) + (parseInt(m)*100) + (parseInt(d));
+	return n;
+};
+
 export const fillData = (data, mrdrs, actualRetailers, retailerToInfo, mrdrToVolumeInfo) => {
 
 	const newData = [];
@@ -130,7 +216,17 @@ export const fillData = (data, mrdrs, actualRetailers, retailerToInfo, mrdrToVol
 		//// TODO: Filter gebruiken, meest recente meting selecteren
 		const entry = data.find(e => ret === e.retailer);
 		if (entry) {
-			newData.push(entry);
+			const all = data.filter(e => ret === e.retailer);
+			const recent = all.sort((a, b) => {
+				if (dateToInt(a.LastMeasurementDate) < dateToInt(b.LastMeasurementDate)) {
+					return 1;
+				}
+				if (dateToInt(a.LastMeasurementDate) > dateToInt(b.LastMeasurementDate)) {
+					return -1;
+				}
+				return 0;
+			})[0];
+			newData.push(recent);
 		} else {
 			const MAT_Volume = calculateAllVolume(mrdrs, mrdrToVolumeInfo, ret);
 			newData.push({price: 0, volume: MAT_Volume || 0, ...retailerToInfo[ret]});
@@ -181,7 +277,7 @@ export const getNicknamesMap = (concepts, conceptNicknames) => {
 	return nicknamesMap;
 };
 
-const calculateAllVolume = (mrdrs, mapping, retailer) => {
+export const calculateAllVolume = (mrdrs, mapping, retailer) => {
 
 	const uniqueMrdrs = [...new Set(mrdrs)];
 	let count = 0;
@@ -194,6 +290,8 @@ const calculateAllVolume = (mrdrs, mapping, retailer) => {
 export const getRetailersAndMeasurementsPerEan = (measurements, retailerToInfo, mrdrToVolumeInfo, eanToSwitchId, switchIdToCodes, dateStrings) => {
 	console.log("start");
 	const measurementsByEan = {};
+	const {lastTwoWeekString} = getDateStrings();
+	const treshold = dateToInt(lastTwoWeekString);
 	const headers = new Set();
 	const todayMeasurements = measurements.filter(e => e.priceDate === dateStrings.todayString);
 	const findOtherPrice = (eans, retailer, dateString) => measurements.find(
@@ -201,20 +299,25 @@ export const getRetailersAndMeasurementsPerEan = (measurements, retailerToInfo, 
 		&& (e.RetailerRSP === retailer)
 		&& (e.priceDate === dateString)
 	)?.Price || 0;
-
+	let count = 1;
 
 	for (const measurement of todayMeasurements) {
 
 		const {active, mrdrs, eans} = switchIdToCodes[eanToSwitchId[measurement.ProductEAN]];
-		if (active) {
+		count % 100 === 0 && console.log(`${count}/${todayMeasurements.length}: ${active}`);
+		count++;
+		const LastMeasurementDate = dateToInt(measurement.LastMeasurementDate);
+		const valid = LastMeasurementDate > treshold;
+
+		if (active && valid) {
 
 			(measurementsByEan[active]) || (measurementsByEan[active] = {data: []});
 
 			const ref = measurementsByEan[active];
-
-			const MAT_Volume = calculateAllVolume(mrdrs, mrdrToVolumeInfo, measurement.RetailerRSP);
-
 			const retailerInfo = retailerToInfo[measurement.RetailerRSP] || {};
+
+			const MAT_Volume = calculateAllVolume(mrdrs, mrdrToVolumeInfo, measurement.RetailerRSP) * retailerInfo.factorAdvices;
+
 			ref.data.push({
 				...measurement,
 				...retailerInfo,
@@ -252,10 +355,9 @@ export const getRetailersAndMeasurementsPerEan = (measurements, retailerToInfo, 
 						? ref.info?.poolCapL
 						: [],
 				priceSetterPrice: retailerInfo.marketLeader ? measurement.Price : ref.info?.priceSetterPrice,
-				ipvDesc: ref.info?.ipvDesc || measurement.ProductName,
+				ipvDesc: ref.info?.priority != 0 ? measurement.ProductName : ref.info?.ipvDesc ? ref.info?.ipvDesc : measurement.ProductName,
 			};
 			headers.add(measurement.RetailerRSP);
-
 		}
 	}
 	return {actualRetailers: headers, measurementsByEan};
@@ -322,7 +424,7 @@ export const getRetailersAndCompetitorMeasurementsPerId = (measurements, retaile
 };
 
 
-export const getMutationsFromMeasurements = (measurements, eanToDescription, eanToSwitchId, switchIdToCodes, dateStrings, categoryInfo, retailerMap) => {
+export const getMutationsFromMeasurements = (measurements, eanToDescription, eanToSwitchId, switchIdToCodes, dateStrings, categoryInfo, retailerMap, nicknames) => {
 	const {brand, concept} = categoryInfo;
 
 	const todayMeasurements = measurements.filter(e => e.priceDate === dateStrings.todayString);
@@ -331,6 +433,9 @@ export const getMutationsFromMeasurements = (measurements, eanToDescription, ean
 		&& (e.RetailerRSP === retailer)
 		&& (e.priceDate === dateString)
 	)?.Price || 0;
+	const findNickname = (concept, brand) => {
+		return nicknames.find(e => (e.concept === concept) && (e.brand === brand))?.nickname || concept;
+	};
 	const mutations = [];
 	for (const measurement of todayMeasurements) {
 		const {Price, ProductEAN, RetailerRSP, ProductName} = measurement;
@@ -345,7 +450,7 @@ export const getMutationsFromMeasurements = (measurements, eanToDescription, ean
 				ean: active,
 				description: ProductName,
 				brand: thisBrand,
-				concept: thisConcept,
+				concept: findNickname(thisConcept, thisBrand),
 				retailer: RetailerRSP,
 				priority: !!retailerMap[RetailerRSP].priority,
 				oldPrice: otherPrice,
@@ -396,17 +501,19 @@ export const getHeaders = (actualRetailers, retailerToInfo) => {
 };
 
 
-export const getBody = (measurementsByEan, switchIdToCodes, eanToSwitchId, actualRetailers, retailerToInfo, mrdrToVolumeInfo) => {
+export const getBody = (measurementsByEan, switchIdToCodes, switchIdToCap, eanToSwitchId, actualRetailers, retailerToInfo, mrdrToVolumeInfo, savedAdvicePricesMap) => {
 	const unSortedBody = [];
 	let count = 1;
 	let total = Object.keys(measurementsByEan).length;
 	for (const [ean, theseMeasurements] of Object.entries(measurementsByEan)) {
-		console.log(count + "/" + total +": " + ean);
+		count % 100 === 0 && console.log(count + "/" + total +": " + ean);
 		count++;
-
-		const {info: {cap, nasa, approxWorth, totalVolume, poolCapH, poolCapL, priceSetterPrice, ipvDesc}, data} = theseMeasurements;
-		const prices = fillData(data, switchIdToCodes[eanToSwitchId[ean]].mrdrs, actualRetailers, retailerToInfo, mrdrToVolumeInfo);
-		const [defaultAdviceHigh, defaultAdviceLow] = getAdvicePrices(poolCapH, poolCapL, cap, priceSetterPrice);
+		const switchId = eanToSwitchId[ean];
+		const mrdrs = switchIdToCodes[switchId].mrdrs;
+		const cap = switchIdToCap[switchId];
+		const {info: {nasa, approxWorth, totalVolume, poolCapH, poolCapL, priceSetterPrice, ipvDesc}, data} = theseMeasurements;
+		const prices = fillData(data, mrdrs, actualRetailers, retailerToInfo, mrdrToVolumeInfo);
+		const [defaultAdviceHigh, defaultAdviceLow] = getAdvicePrices(poolCapH, poolCapL, cap, priceSetterPrice, savedAdvicePricesMap[ean]);
 		unSortedBody.push({
 			// Artikelomschrijving: p[categoryInfo.description],
 			Artikelomschrijving: ipvDesc,
@@ -417,6 +524,7 @@ export const getBody = (measurementsByEan, switchIdToCodes, eanToSwitchId, actua
 			approxWorth: approxWorth || 0,
 			totalVolume: totalVolume || 0,
 			prices,
+			priceSetterPrice: priceSetterPrice || 0,
 			defaultAdviceLow,
 			defaultAdviceHigh,
 		});
@@ -426,18 +534,30 @@ export const getBody = (measurementsByEan, switchIdToCodes, eanToSwitchId, actua
 	return body;
 };
 
-export const getFullBody = (measurementsByEan, switchIdToCodes, eanToSwitchId, actualRetailers, retailerToInfo, mrdrToVolumeInfo, eanToDescription) => {
+export const getFullBody = (measurementsByEan, switchIdToCodes, eanToSwitchId, actualRetailers, retailerToInfo, mrdrToVolumeInfo, eanToDescription, savedAdvicePricesMap) => {
 	const unSortedBody = [];
 	let count = 1;
 	let total = Object.keys(measurementsByEan).length;
-	for (const [ean, theseMeasurements] of Object.entries(measurementsByEan)) {
-		console.log(count + "/" + total +": " + ean);
+	for (const [prean, theseMeasurements] of Object.entries(measurementsByEan)) {
+		count % 100 === 0 && console.log(count + "/" + total);
 		count++;
-
-		const {brand, concept} = eanToDescription[ean] || {};
+		const codes = switchIdToCodes[eanToSwitchId[prean]];
+		const ean = codes.active || prean;
+		const {brand: b, concept: c} = eanToDescription[ean] || {};
+		let brand = b;
+		let concept = c;
+		if (!brand) {
+			for (const e of codes.eans) {
+				const {brand: b, concept: c} = eanToDescription[e] || {};
+				if (b) {
+					brand = b;
+					concept = c;
+				}
+			}
+		}
 		const {info: {cap, nasa, approxWorth, totalVolume, poolCapH, poolCapL, priceSetterPrice, ipvDesc}, data} = theseMeasurements;
-		const prices = fillData(data, switchIdToCodes[eanToSwitchId[ean]].mrdrs, actualRetailers, retailerToInfo, mrdrToVolumeInfo);
-		const [defaultAdviceHigh, defaultAdviceLow] = getAdvicePrices(poolCapH, poolCapL, cap, priceSetterPrice);
+		const prices = fillData(data, codes.mrdrs, actualRetailers, retailerToInfo, mrdrToVolumeInfo);
+		const [defaultAdviceHigh, defaultAdviceLow] = getAdvicePrices(poolCapH, poolCapL, cap, priceSetterPrice, savedAdvicePricesMap[ean]);
 		unSortedBody.push({
 			// Artikelomschrijving: p[categoryInfo.description],
 			Artikelomschrijving: ipvDesc,
@@ -449,6 +569,7 @@ export const getFullBody = (measurementsByEan, switchIdToCodes, eanToSwitchId, a
 			totalVolume: totalVolume || 0,
 			brand: brand || "",
 			concept: concept || "",
+			priceSetterPrice: priceSetterPrice || 0,
 			prices,
 			defaultAdviceLow,
 			defaultAdviceHigh,
@@ -499,4 +620,13 @@ export const getCompetitorBody = (products, measurementsById, brand, concept, ac
 	const body = unSortedBody;
 	console.log(`${brand} - ${concept} - #non empty products${body.length}`);
 	return body;
+};
+
+export const getPotential = (m, cap) => {
+	const thisCap = cap || m?.CAP;
+	console.log({m, thisCap});
+	if (thisCap && m?.Price && (thisCap / m.Price < 2) && (m.Price / thisCap < 2.5)) {
+	 	return [(thisCap - m.Price) / thisCap, thisCap - m.Price, thisCap];
+	}
+	return [false, false, thisCap];
 };

@@ -1,7 +1,7 @@
 import NumberFormat from "react-number-format";
 import React, {useState} from "react";
 
-import { calculateMargin } from "../../util/functions";
+import { calculateMargin, calculateVolume } from "../../util/functions";
 import { unilever_blue } from "../../lib/colors";
 import { updateAdvice, deleteAdvice } from "../../util/reducers";
 import { useStore } from "../../lib/Store";
@@ -15,11 +15,13 @@ import EuroFormat from "../EuroFormat";
 
 
 
+
 const AdviceListRow = ({data}) => {
 	// const [rsp, setRsp] = useState(data.rsp);
 	// const [advice, setAdvice] = useState(data.advice);
 	const [, dispatch] = useStore();
-	const {category, brand, concept, ean, retailer} = data;
+	const {category, brand, concept, ean, retailer, pk} = data;
+	const [marginOverride, setMarginOverride] = useState(false);
 
 	const update = (property) => (e) => {
 		const value = e.floatValue;
@@ -29,7 +31,33 @@ const AdviceListRow = ({data}) => {
 			category,
 			brand,
 			concept,
-			ean,
+			ean: pk,
+			retailer
+		}));
+	};
+
+	const updateText = (property) => (e) => {
+		const value = e.target.value;
+		dispatch(updateAdvice({
+			property,
+			value,
+			category,
+			brand,
+			concept,
+			ean: pk,
+			retailer
+		}));
+	};
+
+	const updateMargin = (e) => {
+		const value = calculateVolume(data.advice, data.rsp, e.floatValue);
+		dispatch(updateAdvice({
+			property: "volume",
+			value,
+			category,
+			brand,
+			concept,
+			ean: pk,
 			retailer
 		}));
 	};
@@ -39,7 +67,7 @@ const AdviceListRow = ({data}) => {
 			category,
 			brand,
 			concept,
-			ean,
+			ean: pk,
 			retailer
 		}));
 	};
@@ -47,10 +75,10 @@ const AdviceListRow = ({data}) => {
 	return (
 		<div className="row">
 			<div className="cell">
-				{data.ean}
+				<input type="text" className="hidden-input" value={ean} onChange={updateText("ean")}/>
 			</div>
 			<div className="cell left">
-				{data.description}
+				<input type="text" className="hidden-input" value={data.description} onChange={updateText("description")}/>
 			</div>
 			<div className="cell">
 				<EuroFormat value={data.rsp} displayType="input" onValueChange={update("rsp")}/>
@@ -81,8 +109,8 @@ const AdviceListRow = ({data}) => {
 					value={((data.advice - data.rsp)/data.rsp)*100}
 				/>
 			</div>
-			<div className="cell">
-				<EuroFormat value={calculateMargin(data.advice, data.rsp, data.volume)} decimalScale={0}/>
+			<div className="cell" onClick={() => setMarginOverride(true)}>
+				<EuroFormat value={calculateMargin(data.advice, data.rsp, data.volume)} displayType={marginOverride ? "input" : "text"} onValueChange={updateMargin} onBlur={() => setMarginOverride(false)} decimalScale={0}/>
 			</div>
 			<div className="cell center">
 				<CloseButton onClick={deleteThis}/>
@@ -118,6 +146,14 @@ const AdviceListRow = ({data}) => {
         }
 				.center {
 					text-align: center;
+				}
+				.hidden-input {
+					appearance: none;
+					border:none;
+					background-image:none;
+					background-color:transparent;
+					box-shadow: none;
+					width: 100%;
 				}
 
 

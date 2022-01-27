@@ -1,7 +1,11 @@
 import React from "react";
 
-import { allBrandsText } from "../../../lib/config";
-import { createUrl } from "../../../util/useSwr-hooks";
+import {
+	allBrandsText,
+	categories,
+	fallback,
+	revalidate
+} from "../../../lib/config";
 import {
 	getBrands,
 	getCategories,
@@ -12,6 +16,9 @@ import {
 } from "../../../util/api-functions/queries";
 import { getNicknamesMap } from "../../../util/api-functions/query-helpers";
 import SettingsApp from "../../../components/SettingsApp";
+
+
+
 
 
 
@@ -73,16 +80,15 @@ export async function getStaticProps({ params }) {
 			brands,
 			conceptsByBrand,
 		},
-		revalidate: 60,
+		revalidate,
 	};
 }
 
 export const getStaticPaths = async () => {
 	// TODO: makeDynamic
-	const categories = ["hc", "fds", "bpc", "rf"];
 	const paths = categories.map((category) => ({
 		params: { category },
 	}));
-	return { paths, fallback: false };
+	return { paths, fallback };
 
 };

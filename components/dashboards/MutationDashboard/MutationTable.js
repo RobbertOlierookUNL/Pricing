@@ -1,22 +1,30 @@
+import Link from "next/link";
 import NumberFormat from "react-number-format";
 import React from "react";
 
 import { bottle_green, sunset_red, unilever_blue } from "../../../lib/colors";
 import EuroFormat from "../../EuroFormat";
 import SkeletonRows from "../subcomponents/Table/SkeletonRows";
+import useCategory from "../../../util/useCategory";
 import useConfig from "../../../util/useConfig";
 
 
 
 
 
+
 const MutationRow = ({description, brand, concept, ean, retailer, oldPrice, newPrice}) => {
+	const cat = useCategory();
 	const diff = newPrice - oldPrice;
 	const diffPer = diff / oldPrice * 100;
 	return (
 		<div className="row">
-			<div className="cell cut-left">{brand}</div>
-			<div className="cell cut-left">{concept}</div>
+			<div className="cell cut-left">
+				<Link href={`/${cat}/overview?b=${brand}`}>{brand}</Link>
+			</div>
+			<div className="cell cut-left">
+				<Link href={`/${cat}/overview?b=${brand}&c=${concept}`}>{concept}</Link>
+			</div>
 			<div className="cell cut-left">{ean}</div>
 			<div className="cell cut-left">{description}</div>
 			<div className="cell">{retailer}</div>

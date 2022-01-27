@@ -23,20 +23,21 @@ const useAdvicePrices = (info) => {
 	const brand = activeBrand?.[category];
 	const concept = activeConcept?.[category]?.[brand];
 
-	const handleSetLastAdviceValue = (value) => setLastAdviceValue(propertySetter(lastAdviceValue, value, true, category, brand, concept, info.EAN_CE)
-		// {
-		// 	...lastAdviceValue,
-		// 	[category]: {
-		// 		...lastAdviceValue?.[category],
-		// 		[brand]: {
-		// 			...lastAdviceValue?.[category]?.[brand],
-		// 			[concept]: {
-		// 				...lastAdviceValue?.[category]?.[brand]?.[concept],
-		// 				[info.EAN_CE]: value
-		// 			}
-		// 		}
-		// 	}
-		// }
+	const handleSetLastAdviceValue = (value) => setLastAdviceValue(
+		// propertySetter(lastAdviceValue, value, true, category, brand, concept, info.EAN_CE)
+		{
+			...lastAdviceValue,
+			[category]: {
+				...lastAdviceValue?.[category],
+				[brand]: {
+					...lastAdviceValue?.[category]?.[brand],
+					[concept]: {
+						...lastAdviceValue?.[category]?.[brand]?.[concept],
+						[info.EAN_CE]: value
+					}
+				}
+			}
+		}
 	);
 	const handleLastAdviceValue = lastAdviceValue?.[category]?.[brand]?.[concept]?.[info.EAN_CE];
 
@@ -45,7 +46,8 @@ const useAdvicePrices = (info) => {
 	const [adviceLow, setAdviceLow] = useState(handleLastAdviceValue?.low || info?.defaultAdviceLow[adviceMode] || 0);
 
 	const saveAdvicePrices = async () => {
-		await myFetch("POST", "/api/settings/nickname/modify-concept-nickname", {ean: info.EAN_CE, adviceH: adviceHigh, adviceL: currentLow});
+		console.log("yo");
+		await myFetch("POST", "/api/settings/ean/upsert-advice-prices", {EAN: info.EAN_CE, adviceH: adviceHigh, adviceL: currentLow});
 	};
 
 	const handleHighChange = e => {

@@ -4,7 +4,8 @@ import {
 	getMasterEanMap,
 	getRetailerMap,
 	getRetailersAndMeasurementsPerEan,
-	getVolumeMap,
+	getSavedAdvicePricesMap,
+	getVolumeMap
 } from "../query-helpers";
 import {
 	getMeasurements,
@@ -12,10 +13,12 @@ import {
 	getRelevantEansFromCategory,
 	getRelevantEansFromConcept,
 	getRetailers,
+	getSavedAdvicePrices,
 	getSwitchIds,
-	getVolumes,
+	getVolumes
 } from "../queries";
-import { saveParse } from "../../functions";
+
+
 
 const logging = true;
 
@@ -43,7 +46,10 @@ const getRspInfoFromConcept = async (category, brand, concept, cat, categoryInfo
 	logging && console.log({productTableEans, eanMap});
 
 	const switchIds = await getSwitchIds(productTableEans);
-	const {switchIdToCodes, eanToSwitchId, mrdrs, eans} = getMasterEanMap(switchIds, eanMap);
+	const {switchIdToCodes, eanToSwitchId, mrdrs, eans, switchIdToCap} = getMasterEanMap(switchIds, eanMap);
+	const savedAdvicePrices = await getSavedAdvicePrices(eans);
+	const savePriceCheck = !!savedAdvicePrices.length;
+	const savedAdvicePricesMap = getSavedAdvicePricesMap(savedAdvicePrices);
 	logging && console.log(`${brand} - ${concept} - #products: ${productTableEans.length} - 0%`);
 	// const {eanToMrdr, eans, mrdrs} = getCodes(products);
 	logging && console.time(`${brand} - ${concept} measurements`);
@@ -60,9 +66,9 @@ const getRspInfoFromConcept = async (category, brand, concept, cat, categoryInfo
 	logging && console.log(`${brand} - ${concept} - #retailers found: ${actualRetailers.size} - 75%`);
 
 
-	const body = getBody(measurementsByEan, switchIdToCodes, eanToSwitchId, actualRetailers, retailerToInfo, mrdrToVolumeInfo);
+	const body = getBody(measurementsByEan, switchIdToCodes, switchIdToCap, eanToSwitchId, actualRetailers, retailerToInfo, mrdrToVolumeInfo, savedAdvicePricesMap);
 	logging && console.log(`${brand} - ${concept} - #body found: ${body} - 100%`);
-	return {headers, body};
+	return {headers, body, savePriceCheck};
 };
 
 export default getRspInfoFromConcept;

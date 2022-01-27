@@ -1,6 +1,12 @@
 import React from "react";
 
-import { allBrandsText, allConceptsFromBrandText } from "../../../lib/config";
+import {
+	allBrandsText,
+	allConceptsFromBrandText,
+	categories,
+	fallback,
+	revalidate
+} from "../../../lib/config";
 import {
 	getAllCompetitorProductsFromBrand,
 	getAllConceptNicknames,
@@ -12,14 +18,15 @@ import {
 	getCompetitorInfo,
 	getCompetitorMeasurements,
 	getCompetitorProducts,
+	getLastRefresh,
 	getMeasurements,
 	getRetailers,
+	getSavedAdvicePrices,
 	getSwitchIds,
 	getValidEans,
 	getVolumes
 } from "../../../util/api-functions/queries";
 import {
-	getBody,
 	getCodesFromDetailedProducts,
 	getCompetitorBody,
 	getCompetitorCodes,
@@ -29,11 +36,17 @@ import {
 	getRetailerMap,
 	getRetailersAndCompetitorMeasurementsPerId,
 	getRetailersAndMeasurementsPerEan,
+	getSavedAdvicePricesMap,
 	getVolumeMap
 } from "../../../util/api-functions/query-helpers";
 import { propertySetter } from "../../../util/functions";
 import PlanDashboard from "../../../components/dashboards/PlanDashboard";
 import getDateStrings from "../../../util/api-functions/get-date-strings";
+
+
+
+
+
 
 
 
@@ -56,7 +69,9 @@ export default PlanDashboardPage;
 export async function getStaticProps({ params }) {
 
 	const {category: cat} = params;
-	const dateStrings = getDateStrings();
+	const lastRefresh = await getLastRefresh();
+
+	const dateStrings = getDateStrings(lastRefresh?.Last_Refresh);
 	if (cat != "umfeld") {
 
 		const category = await getCategories(cat);
@@ -68,6 +83,8 @@ export async function getStaticProps({ params }) {
 		const {brands, conceptsByBrand, productTableEans, eanToMrdrs, eanToDescription} = getCodesFromDetailedProducts(detailedProducts, validEans, conceptNicknames, categoryInfo);
 		const switchIds = await getSwitchIds(productTableEans);
 		const {switchIdToCodes, eanToSwitchId, mrdrs, eans} = getMasterEanMap(switchIds, eanToMrdrs);
+		const savedAdvicePrices = await getSavedAdvicePrices(eans);
+		const savedAdvicePricesMap = getSavedAdvicePricesMap(savedAdvicePrices);
 		const measurements = await getMeasurements(eans, dateStrings);
 		const volumes = await getVolumes(mrdrs);
 		const mrdrToVolumeInfo = getVolumeMap(volumes);
@@ -75,7 +92,7 @@ export async function getStaticProps({ params }) {
 		const retailerToInfo = getRetailerMap(retailers);
 		const {actualRetailers, measurementsByEan} = getRetailersAndMeasurementsPerEan(measurements, retailerToInfo, mrdrToVolumeInfo, eanToSwitchId, switchIdToCodes, dateStrings);
 		const headers = getHeaders(actualRetailers, retailerToInfo);
-		const body = getFullBody(measurementsByEan, switchIdToCodes, eanToSwitchId, actualRetailers, retailerToInfo, mrdrToVolumeInfo, eanToDescription);
+		const body = getFullBody(measurementsByEan, switchIdToCodes, eanToSwitchId, actualRetailers, retailerToInfo, mrdrToVolumeInfo, eanToDescription, savedAdvicePricesMap);
 
 		// const brands = await getBrands(category, categoryInfo, validEans);
 		//
@@ -133,7 +150,7 @@ export async function getStaticProps({ params }) {
 				category,
 				brands,
 				conceptsByBrand,
-				data: {headers, body}
+				data: {headers, body, savePriceCheck: "wait", lastRefresh}
 			},
 			revalidate: 60,
 		};
@@ -182,17 +199,17 @@ export async function getStaticProps({ params }) {
 				conceptsByBrand,
 				dataByConceptsByBrand
 			},
-			revalidate: 60,
+			revalidate,
 		};
 	}
 }
 
 export const getStaticPaths = async () => {
 	// TODO: makeDynamic
-	const categories = ["hc", "fds", "bpc", "rf", "umfeld"];
+	// const categories = [];
 	const paths = categories.map((category) => ({
 		params: { category },
 	}));
-	return { paths, fallback: false };
+	return { paths, fallback };
 
 };

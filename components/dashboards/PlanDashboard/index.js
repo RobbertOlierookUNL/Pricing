@@ -1,15 +1,14 @@
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import SnackbarProvider from "react-simple-snackbar";
 
-import {
-	useCategoriesFromCategory,
-	useBrandsFromCategory,
-	useConceptsFromBrand
-} from "util/useSwr-hooks";
 import candyPinkBackground from "res/candy-pink-background.jpg";
 
 import { allBrandsText, allConceptsFromBrandText } from "../../../lib/config";
-import { parallelPrefetcher } from "../../../util/useParallelPrefetcher";
+import {
+	createAooFromServerData,
+	downloadExcelFromAoo,
+} from "../../../util/functions";
 import { setConcept } from "../../../util/reducers";
 import { useDataFromConcept } from "../../../util/useSwr-hooks";
 import { useStore } from "../../../lib/Store";
@@ -27,8 +26,8 @@ import Sider from "../../Sider";
 import View from "../../View";
 import useCategory from "../../../util/useCategory";
 import useConfig from "../../../util/useConfig";
-import useDefaultParams from "../../../util/useDefaultParams";
-import usePrefetcher from "../../../util/usePrefetcher";
+
+
 
 
 
@@ -49,16 +48,26 @@ import usePrefetcher from "../../../util/usePrefetcher";
 
 const PlanDashboard = ({category: categories, brands, conceptsByBrand, data: serverData, dataByConceptsByBrand}) => {
 	const [selectAllState, setSelectAllState] = useState({value: "unset", done: true});
+	const router = useRouter();
 	console.log({categories, brands, conceptsByBrand, serverData});
 
-	const {category, b, c} = useDefaultParams();
-	console.log({b, c});
+	const category = useCategory();
+
+
 
 	const [{nextStep, advice}, adviceDispatch] = useStore();
 
 	const [activeBrand, setActiveBrand] = useConfig("lastActiveBrand");
 	const [activeConcept, setActiveConcept] = useConfig("lastActiveConcept");
+	const [volumeMode, setVolumeMode] = useConfig("volumeMode");
 
+	const toggleVolumeMode = () => {
+		setVolumeMode(!volumeMode);
+	};
+
+	const superDownload = () => {
+		 downloadExcelFromAoo(createAooFromServerData(serverData), "db-dump-"+category+"-"+new Date().toLocaleString());
+	};
 
 
 	const handleSetActiveBrand = value => setActiveBrand({...activeBrand, [category]: value});
@@ -66,16 +75,18 @@ const PlanDashboard = ({category: categories, brands, conceptsByBrand, data: ser
 
 
 
-	const defaultBrand = b || brands?.[0];
+	// const [defaultBrand, setDefaultBrand] = useState(brands?.[0];)
+	// const [defaultConcept, setDefaultConcept] = useState()
+	const defaultBrand = brands?.[0];
 	const brand = activeBrand?.[category] || defaultBrand;
 
-	const conceptMap = {...conceptsByBrand[brand]};
+	const conceptMap = {...conceptsByBrand?.[brand]};
 	conceptMap[allConceptsFromBrandText(brand)] = allConceptsFromBrandText(brand);
 	const concepts = Object.keys(conceptMap);
-	const defaultConcept = c || (brand === allBrandsText ? allBrandsText : concepts?.[0]);
+	const defaultConcept = (brand === allBrandsText ? allBrandsText : concepts?.[0]);
 	const concept = activeConcept?.[category]?.[brand] || defaultConcept;
 
-	const filteredBody = category === "umfeld" || serverData.body.filter(e => {
+	const filteredBody = category === "umfeld" || serverData?.body?.filter(e => {
 		if (brand === allBrandsText) {
 			return true;
 		}
@@ -84,10 +95,13 @@ const PlanDashboard = ({category: categories, brands, conceptsByBrand, data: ser
 		}
 		return e.brand === brand && e.concept === concept;
 	});
-	const filteredData = category === "umfeld" ? dataByConceptsByBrand[brand][concept] : {headers: serverData.headers, body: filteredBody};
+	const filteredData = category === "umfeld" ? dataByConceptsByBrand[brand][concept] : {headers: serverData?.headers, body: filteredBody, savePriceCheck: serverData?.savePriceCheck || "wait", lastRefresh: serverData?.lastRefresh};
 	const {data: swrData, dataIsLoading} = useDataFromConcept(categories, brand, conceptMap[concept], category);
 	console.log({dataIsLoading, swrData, filteredData});
 	const data = dataIsLoading ? filteredData : swrData;
+	const savePriceCheck = data?.savePriceCheck;
+	const lastRefresh =  data?.lastRefresh;
+	console.log({lastRefresh});
 
 	useEffect(() => {
 		if (nextStep) {
@@ -106,25 +120,45 @@ const PlanDashboard = ({category: categories, brands, conceptsByBrand, data: ser
 	console.log({category, categories, brands, concepts, data, advice});
 	return (
 		<Background image={candyPinkBackground}>
-			<Sider title="RSP Monitor"/>
+			<Sider title="RSP Monitor" lastRefresh={lastRefresh} savePriceCheck={savePriceCheck}/>
 
 			<View rightSider>
-				<DashboardContainer type="with-header-and-footer">
-					<DashboardHeader>
-						<PlanDashboardTitle/>
-					</DashboardHeader>
-					<DashboardContent>
-						<PlanDashboardContent data={data} errorState={false} loadingState={false} doSelectAll={{...selectAllState, execute}}/>
-					</DashboardContent>
-					<DashboardFooter>
-						<DashboardFooterButtonContainer>
-							<PlanDashboardButtons selectAll={selectAll}/>
-						</DashboardFooterButtonContainer>
-					</DashboardFooter>
-				</DashboardContainer>
+				<SnackbarProvider>
+					<DashboardContainer type="with-header-and-footer">
+						<DashboardHeader>
+							<PlanDashboardTitle/>
+							<div onClick={toggleVolumeMode} className="float-right clickable">Volumeloosheid {volumeMode ? "selecteerbaar maken" : "onselecteerbaar maken"}</div>
+
+						</DashboardHeader>
+						<DashboardContent>
+							<PlanDashboardContent data={data} errorState={false} loadingState={router.isFallback} doSelectAll={{...selectAllState, execute}}/>
+						</DashboardContent>
+						<DashboardFooter>
+							<DashboardFooterButtonContainer>
+								<PlanDashboardButtons selectAll={selectAll} download={superDownload} savePriceCheck={savePriceCheck}/>
+							</DashboardFooterButtonContainer>
+						</DashboardFooter>
+					</DashboardContainer>
+				</SnackbarProvider>
 			</View>
 
-			<ConceptSider brands={brands} defaultBrand={defaultBrand} brandsIsLoading={false} defaultConcept={defaultConcept} concepts={concepts} conceptsIsLoading={false}/>
+			<ConceptSider brands={brands} defaultBrand={defaultBrand} brandsIsLoading={router.isFallback} defaultConcept={defaultConcept} concepts={concepts} conceptsIsLoading={router.isFallback}/>
+			<style jsx>{`
+				.float-right {
+					float: right;
+					color: white;
+					right: 15px;
+					position: absolute;
+					top: 50%;
+					transform: translateY(-50%);
+					font-size: 1em;
+					transition: 250ms font-size;
+
+				}
+				.float-right:hover {
+					font-size: 1.05em;
+				}
+			`}</style>
 		</Background>
 	);
 };

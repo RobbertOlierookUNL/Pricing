@@ -17,18 +17,21 @@ export default async function (req, res) {
 	// 	},
 	// 	secure: false,
 	// });
+	try {
+		const https = require("https");
 
-	const https = require("https");
+		const transporter = axios.create({
+			httpsAgent: new https.Agent({
+				rejectUnauthorized: false,
+			}),
+		});
 
-	const transporter = axios.create({
-		httpsAgent: new https.Agent({
-			rejectUnauthorized: false,
-		}),
-	});
+		await iterateAdvices(transporter, advice, info);
 
-	iterateAdvices(transporter, advice, info);
-
-	return res.json({done: true});
+		return res.json({done: true});
+	} catch (e) {
+		res.status(500).json({ message: e.message });
+	}
 
 
 }

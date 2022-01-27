@@ -35,7 +35,7 @@ const CategoryPickApp = () => {
 			<Sider title="RSP Monitor"/>
 			<View>
 				<PickCardLayout type="141">
-					<PickCard type="first" title="Analyses" image={analyses} route={goToRoute(suffice("analyses"))}/>
+					<PickCard type="first" title="Margepotentie" image={analyses} route={goToRoute(suffice("analyses"))}/>
 					<PickCard title="Foods" image={food} route={goToRoute(suffice("fds"))}/>
 					<PickCard title="Refreshments" image={refreshment} route={goToRoute(suffice("rf"))}/>
 					<PickCard title="Home Care" image={homecare} route={goToRoute(suffice("hc"))}/>

@@ -5,6 +5,7 @@ import {
 	getCompetitorInfo,
 	getCompetitorMeasurements,
 	getCompetitorProducts,
+	getLastRefresh,
 	getRetailers
 } from "../../../util/api-functions/queries";
 import {
@@ -29,6 +30,7 @@ import getRspInfoFromConcept from
 
 
 
+
 const logging = true;
 
 
@@ -37,15 +39,15 @@ const logging = true;
 
 const handler = async (req, res) => {
 	const { category: unparsed, brand, concept, cat } = req.query;
-	const dateStrings = getDateStrings();
 	const allMode = brand === allBrandsText;
-	if (allMode) {
-		console.log("WOOOOP");
-	}
+
 	const allFromBrandMode = concept === allConceptsFromBrandText(brand);
 	if (concept && (concept !== "undefined" || cat === "umfeld" || allMode)) {
 
 		try {
+			const lastRefresh = await getLastRefresh();
+			const dateStrings = getDateStrings(lastRefresh?.Last_Refresh);
+
 			const category = saveParse(unparsed);
 
 			if (req.method === "GET") {
@@ -53,8 +55,8 @@ const handler = async (req, res) => {
 					logging && console.time(`${brand} - ${concept} categoryInfo`);
 					const categoryInfo = await getCategoryInfo(cat);
 					logging && console.timeEnd(`${brand} - ${concept} categoryInfo`);
-					const {headers, body} = await getRspInfoFromConcept(category, brand, saveParse(concept), cat, categoryInfo, dateStrings, allMode, allFromBrandMode);
-					return res.json({headers, body});
+					const {headers, body, savePriceCheck} = await getRspInfoFromConcept(category, brand, saveParse(concept), cat, categoryInfo, dateStrings, allMode, allFromBrandMode);
+					return res.json({headers, body, savePriceCheck, lastRefresh});
 				} else {
 					let products;
 					if (allMode) {

@@ -37,12 +37,13 @@ const AdvicesApp = () => {
 
 	const advicePerRetailerAndCategory = {};
 	for (const category of Object.keys(advice)) {
-		const retailerMoveUp = Object.values(advice[category]).reduce((acc, val) => {
+		const retailerMoveUp = Object.entries(advice[category]).reduce((acc, [ean, val]) => {
 			for (const retailer of Object.keys(val)) {
+				const obj = {pk: ean, ...val[retailer]};
 				if (Object.prototype.hasOwnProperty.call(acc, retailer)) {
-					acc[retailer].push(val[retailer]);
+					acc[retailer].push(obj);
 				} else {
-					acc[retailer] = [val[retailer]];
+					acc[retailer] = [obj];
 				}
 			}
 			return acc;

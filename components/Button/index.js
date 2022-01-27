@@ -2,21 +2,22 @@ import React from "react";
 import Link from "next/link";
 import * as c from "../../lib/colors";
 
-const Button = ({type, onClick, color = "unilever_blue", variant = "colored", width = "auto", href, pushLeft, children}) => {
+const Button = ({type, onClick, color = "unilever_blue", variant = "colored", width = "auto", href, pushLeft, disabled, children}) => {
 	return (
 		<>
 			{href ?
 				<Link
 					href={href}
-					className={`btn ${variant} ${variant === "text" ? "text-hover-pop" : "hover-pop"}`}
+					className={`btn ${variant} ${disabled ? "" : (variant === "text" ? "text-hover-pop" : "hover-pop")}`}
 				>
 					{children}
 				</Link>
 				:
 				<button
-					className={`btn ${variant} ${variant === "text" ? "text-hover-pop" : "hover-pop"}`}
+					className={`btn ${variant} ${disabled ? "" : (variant === "text" ? "text-hover-pop" : "hover-pop")}`}
 					type={type}
 					onClick={onClick}
+					disabled={disabled}
 				>
 					{children}
 				</button>
@@ -25,7 +26,7 @@ const Button = ({type, onClick, color = "unilever_blue", variant = "colored", wi
 			.btn {
 				padding: 7px;
 				width: ${width === "fixed" ? "100px" : width};
-				cursor: pointer;
+				cursor: ${disabled ? "auto" : "pointer"};
 				border: none;
 				${ variant !== "text" ? "font-size: 1.1em" : ""};
 				${ pushLeft ? "margin-left: 15px" : ""};
@@ -46,7 +47,7 @@ const Button = ({type, onClick, color = "unilever_blue", variant = "colored", wi
 
 			}
 			.colored {
-				background-color: ${c[color]?.color || c[color]};
+				background-color: ${disabled ? "gray" : c[color]?.color || c[color]};
 				color: ${c[color]?.text || "white"};
 			}
 		`}</style>

@@ -1,8 +1,18 @@
 import React from "react";
 
-import { getDateStringFromValue, typesOfInterval } from "../../../lib/config";
+import {
+	categories,
+	fallback,
+	getDateStringFromValue,
+	revalidate,
+	typesOfInterval
+} from "../../../lib/config";
+import { getLastRefresh } from "../../../util/api-functions/queries";
 import MutationDashboard from "../../../components/dashboards/MutationDashboard";
 import getMutations from "../../../util/api-functions/end-points/get-mutations";
+
+
+
 
 
 
@@ -26,20 +36,22 @@ export async function getStaticProps({ params }) {
 		const mutations = await getMutations(category, i);
 		mutationsPerInterval[interval] = mutations;
 	}
+	const lastRefresh = await getLastRefresh();
 	return {
 		props: {
-			mutationsPerInterval
+			mutationsPerInterval,
+			lastRefresh
 		},
-		revalidate: 60,
+		revalidate,
 	};
 }
 
 export const getStaticPaths = async () => {
 	// TODO: makeDynamic
-	const categories = ["hc", "fds", "bpc", "rf", "umfeld"];
+
 	const paths = categories.map((category) => ({
 		params: { category },
 	}));
-	return { paths, fallback: false };
+	return { paths, fallback };
 
 };

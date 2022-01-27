@@ -6,7 +6,7 @@ import sendMail from "./send-mail";
 
 const getHasNasa = async () => {
 	const nasaRetailers = await query(/* sql */`
-		SELECT retailer FROM pricing_tool_retailers
+		SELECT retailer FROM athena_advicetool_retailers
 		WHERE nasa = ?
 `, 1
 	);
@@ -67,7 +67,7 @@ const iterateAdvices = async (transporter, advice, info) => {
 			if (transporter) {
 				await sendMail(excelBuffer, transporter, info[category], retailer, category.toUpperCase());
 			} else {
-				returnArray.push({excelBuffer: excelBuffer.toString("base64"), name: `Unilever - Vrijblijvend advies ${info[category]?.week ? `W${info.week} ` : ""}- ${retailer} - ${info[category]?.title || category}`});
+				returnArray.push({excelBuffer: excelBuffer.toString("base64"), name: `Unilever - Vrijblijvend advies ${info[category]?.week ? `W${info[category]?.week} ` : ""}- ${retailer} - ${info[category]?.title || category}`});
 			}
 		}
 	}

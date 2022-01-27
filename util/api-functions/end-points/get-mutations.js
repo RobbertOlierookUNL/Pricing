@@ -1,4 +1,5 @@
 
+import { getAllConceptNicknames } from "../queries";
 import {
 	getAllDetailedProducts,
 	getAllProducts,
@@ -20,6 +21,7 @@ import {
 } from "../../../util/api-functions/query-helpers";
 import { getDateStringFromValue } from "../../../lib/config";
 import getDateStrings from "../../../util/api-functions/get-date-strings";
+
 
 
 
@@ -62,7 +64,8 @@ const getMutations = async (category, i) => {
 		const retailers = await getRetailers(category);
 		const retailerMap = getRetailerMap(retailers);
 		console.log(4);
-		const mutations = getMutationsFromMeasurements(measurements, eanToDescription, eanToSwitchId, switchIdToCodes, {intervalDate, todayString}, categoryInfo, retailerMap);
+		const nicknames = await getAllConceptNicknames(category);
+		const mutations = getMutationsFromMeasurements(measurements, eanToDescription, eanToSwitchId, switchIdToCodes, {intervalDate, todayString}, categoryInfo, retailerMap, nicknames);
 
 		return mutations;
 	} else {

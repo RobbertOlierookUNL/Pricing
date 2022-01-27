@@ -1,12 +1,15 @@
 import { mailHtml, mailText } from "../../lib/text";
+import axios from "axios";
 
 
 
 
 const sendMail = async (excelBuffer, transporter, info, retailer, category) => {
 	try {
+		const https = require("https");
+
 		const token = process.env.SG_API_KEY;
-		await transporter({
+		const options = {
 			url: "https://api.sendgrid.com/v3/mail/send",
 			method: "post",
 			data: {
@@ -20,7 +23,7 @@ const sendMail = async (excelBuffer, transporter, info, retailer, category) => {
 					}
 				],
 				from: {
-					name: "bot, advies",
+					// name: "bot, advies",
 					email: process.env.ADVICEBOT_USER,
 				},
 				subject: `${category} - ${retailer} | Vrijblijvend advies`,
@@ -45,8 +48,77 @@ const sendMail = async (excelBuffer, transporter, info, retailer, category) => {
 			headers: {
 				"Content-type": "application/json; charset=UTF-8",
 				"Authorization": "Bearer " + token,
+			},
+			rejectUnauthorized: false,//add when working with https sites
+			requestCert: false,//add when working with https sites
+			agent: false,//add when working with https sites
+			httpsAgent: new https.Agent({
+				rejectUnauthorized: false,
+				keepAlive: true,
+				maxSockets: Infinity
+			}),
+		};
+		// await new Promise((resolve, reject) => {
+		// 	axios(options, function(error, response, body) {
+		// 		if (error) {
+		// 			reject(error);
+		// 			throw new Error(error);
+		// 		}
+		// 		console.log(body);
+		// 		resolve("done");
+		// 	});
+		// });
+		await new Promise((resolve, reject) => {
+			try {
+				axios(options);
+				resolve();
+			} catch (e) {
+				reject(e);
+				throw new Error(e);
 			}
-		});
+		}).catch(e => console.log({yo: e}));
+
+		// await transporter({
+		// 	url: "https://api.sendgrid.com/v3/mail/send",
+		// 	method: "post",
+		// 	data: {
+		// 		personalizations: [
+		// 			{
+		// 				to: [
+		// 					{
+		// 						email: info?.[retailer]?.email || "robbert.olierook@unilever.com",
+		// 					}
+		// 				]
+		// 			}
+		// 		],
+		// 		from: {
+		// 			// name: "bot, advies",
+		// 			email: process.env.ADVICEBOT_USER,
+		// 		},
+		// 		subject: `${category} - ${retailer} | Vrijblijvend advies`,
+		// 		content: [
+		// 			{
+		// 				type: "text/plain",
+		// 				value: mailText(info?.[retailer]?.name || "", category, retailer)
+		// 			},
+		// 			{
+		// 				type: "text/html",
+		// 				value: mailHtml(info?.[retailer]?.name || "", category, retailer)
+		// 			}
+		// 		],
+		// 		"attachments": [
+		// 			{
+		// 				"content": excelBuffer.toString("base64"),
+		// 				"filename": `Unilever - Vrijblijvend advies ${info?.week ? `W${info.week} ` : ""}- ${retailer} - ${info?.title || category}.xlsx`,
+		// 				"disposition": "attachment"
+		// 			}
+		// 		],
+		// 	},
+		// 	headers: {
+		// 		"Content-type": "application/json; charset=UTF-8",
+		// 		"Authorization": "Bearer " + token,
+		// 	}
+		// });
 		console.log(`sent ${category} - ${retailer} to ${info?.[retailer]?.email || "robbert.olierook@unilever.com"}`);
 	} catch (e) {
 		console.log(e);

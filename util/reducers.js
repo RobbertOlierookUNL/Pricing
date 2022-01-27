@@ -16,9 +16,10 @@ export const UPDATE_CONFIG = "CONFIG/UPDATE_CONFIG";
 const defaultConfig = {
 	retailerMode: false,
 	deltaMode: false,
-	adviceMode: "pushAdvice",
+	adviceMode: "saved",
 	intervalMode: "weekRsp",
-	infoMode: "relativePrice",
+	infoMode: "pricesetter",
+	volumeMode: true,
 	adviceInfo: {},
 	lastActiveBrand: {},
 	lastActiveConcept: {},

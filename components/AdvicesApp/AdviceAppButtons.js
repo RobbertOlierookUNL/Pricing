@@ -32,7 +32,10 @@ const AdviceAppButtons = () => {
 	const [info] = useConfig("adviceInfo");
 	const [openSnackbar, openErrorSnackbar] = useMySnackbar();
 
-
+	const mailAndDownloadAdvice = () => {
+		mailAdvice();
+		downloadAdvice();
+	};
 
 
 	const mailAdvice = async () => {
@@ -101,8 +104,8 @@ const AdviceAppButtons = () => {
 			<Button onClick={goBack} color="color_error" variant="colored" width="fixed">Terug</Button>
 			<Grower grow={1} />
 			<Button color="unilever_blue" variant="colored" width="fixed" pushLeft onClick={goBack}>Dashboard</Button>
-			<Button color="unilever_blue" variant="colored" width="fixed" pushLeft onClick={downloadAdvice}>Download</Button>
-			<Button color="color_good" variant="colored" width="fixed" pushLeft onClick={mailAdvice}>Versturen</Button>
+			<Button color="unilever_blue" variant="colored" width="auto" pushLeft onClick={downloadAdvice}>Alleen downloaden</Button>
+			<Button color="color_good" variant="colored" width="auto" pushLeft onClick={mailAndDownloadAdvice}>Downloaden en versturen</Button>
 		</>
 	);
 };

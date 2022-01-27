@@ -1,7 +1,8 @@
 import { getDateString, getIntervalDay } from "../functions";
 
-const getDateStrings = () => {
-	const today = new Date();
+const getDateStrings = (td) => {
+	const preDay = new Date(td);
+	const today = td ? new Date(preDay.getFullYear(), preDay.getMonth(), preDay.getDate()) : new Date();
 	let saturday = false;
 	let sunday = false;
 	if(today.getDay() == 6) {
@@ -10,7 +11,7 @@ const getDateStrings = () => {
 	if(today.getDay() == 0){
 		sunday = true;
 	}
-	const todayString = getDateString(getIntervalDay(saturday ? {d: -1} : sunday ? {d: -2} : {}));
+	const todayString = getDateString(today);
 	const yesterdayString = getDateString(getIntervalDay(sunday ? {d: -2} : {d: -1}));
 	const lastTwoDayString = getDateString(getIntervalDay({d: -2}));
 	const lastFiveDayString = getDateString(getIntervalDay({d: -5}));

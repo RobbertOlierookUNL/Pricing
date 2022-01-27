@@ -1,11 +1,13 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 
 import { allBrandsText, allConceptsFromBrandText } from "../../../lib/config";
 import {bottle_green} from "../../../lib/colors";
 import List from "./List";
 import useCategory from "../../../util/useCategory";
 import useConfig from "../../../util/useConfig";
+import useDefaultParams from "../../../util/useDefaultParams";
 import useOverflowDetector from "../../../util/useOverflowDetector";
+
 
 
 
@@ -13,9 +15,13 @@ import useOverflowDetector from "../../../util/useOverflowDetector";
 const ConceptSider = ({brands, brandsIsLoading, defaultConcept, defaultBrand, concepts, conceptsIsLoading}) => {
 	// const [activeConcept, setActiveConcept] = useContext(ActiveConcept);
 	// const [activeBrand, setActiveBrand] = useContext(ActiveBrand);
-	const category = useCategory();
+	const {category, b, c} = useDefaultParams();
 	const [activeBrand, setActiveBrand] = useConfig("lastActiveBrand");
 	const [activeConcept, setActiveConcept] = useConfig("lastActiveConcept");
+
+	const [brandParamDone, setBrandParamDone] = useState(false);
+	const [conceptParamDone, setConceptParamDone] = useState(false);
+
 
 	const [conceptOverflowRef, conceptHasOverflow] = useOverflowDetector();
 	const [brandOverflowRef, brandHasOverflow] = useOverflowDetector();
@@ -26,6 +32,8 @@ const ConceptSider = ({brands, brandsIsLoading, defaultConcept, defaultBrand, co
 	const handleSetActiveBrand = value => setActiveBrand({...activeBrand, [category]: value});
 	const handleSetActiveConcept = value => setActiveConcept({...activeConcept, [category]: {...activeConcept?.[category], [brand]: value}});
 
+
+
 	const handleClickConcept = (item) => () => handleSetActiveConcept(item);
 	const handleClickBrand = (item) => () => handleSetActiveBrand(item);
 
@@ -34,6 +42,25 @@ const ConceptSider = ({brands, brandsIsLoading, defaultConcept, defaultBrand, co
 
 	const brandItems = !brandsIsLoading && Array.isArray(brands) && [allBrandsText, ...brands];
 	const conceptItems = brand === allBrandsText ? [allBrandsText] : !conceptsIsLoading && Array.isArray(concepts) && [...new Set([allConceptsFromBrandText(brand), ...concepts])];
+
+
+	useEffect(() => {
+		if (b && !brandParamDone && brandItems.some(e => e == b)) {
+			handleSetActiveBrand(b);
+			setBrandParamDone(true);
+		}
+		if (c && !conceptParamDone && conceptItems.some(e => e == c)) {
+			handleSetActiveConcept(c);
+			setConceptParamDone(true);
+		}
+	}, [b, brandParamDone, c, conceptParamDone]);
+
+	// useEffect(() => {
+	// 	if (c && !conceptParamDone && conceptItems.some(e => e == c)) {
+	// 		handleSetActiveConcept(c);
+	// 		setConceptParamDone(true);
+	// 	}
+	// }, [c, conceptParamDone]);
 
 	return (
 		<>

@@ -110,10 +110,10 @@ const usePriceInfo = () => {
 	case "lastMeasurement": {
 		const PriceInfo = ({price, advice, selectedForAdvice}) => {
 			const mDate = price.LastMeasurementDate;
-			const {yesterdayString, lastTwoWeekString} = getDateStrings();
+			const {yesterdayString, lastWeekString} = getDateStrings();
 			const recent = !isDateBeforeDate(mDate, yesterdayString);
 			const fair = isDateBeforeDate(mDate, yesterdayString);
-			const oldDate = isDateBeforeDate(mDate, lastTwoWeekString);
+			const oldDate = isDateBeforeDate(mDate, lastWeekString);
 
 			return (
 				<>
@@ -143,6 +143,28 @@ const usePriceInfo = () => {
 					<style jsx>{`
 						.override {
 							color: ${source === "IPV" ? denim_blue.color : bottle_green.color};
+						}
+			`}</style>
+				</>
+			);
+		};
+		return PriceInfo;
+	}
+	case "pricesetter": {
+		const PriceInfo = ({price, pricesetterPrice, selectedForAdvice}) => {
+			console.log({pricesetterPrice});
+			const value = pricesetterPrice && setDecimals((((price.rsp) / pricesetterPrice) * 100), 0) - 100;
+			const getColor = useColorScale(-8, -3);
+			const color = value ? getColor(value) : "inherit";
+			return (
+				<>
+					<div className="override">
+						{!!value && <NumberFormat value={value} displayType="text" decimalSeparator="," thousandSeparator="." suffix="%"/>}
+					</div>
+					<style jsx>{`
+						.override {
+							color: ${selectedForAdvice ? "inherit" : color};
+							font-weight: bold;
 						}
 			`}</style>
 				</>

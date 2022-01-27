@@ -20,7 +20,8 @@ const useRetailerSorter = (data, priomode) => {
 				}
 				return -1;
 			};
-			let theData = data.filter(e => !!e.show);
+			let theData = data;
+			// .filter(e => !!e.show);
 			if (priomode) {
 				theData = data.filter(e => !!e.priority);
 			}

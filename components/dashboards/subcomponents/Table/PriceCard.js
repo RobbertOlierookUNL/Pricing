@@ -22,11 +22,13 @@ import usePriceInfo from "../../../../util/usePriceInfo";
 
 
 
-const PriceCard = ({price, getLocalState, advice, adviceStub, headerSelections, isAlreadyInAdvice, umfeld}) => {
+const PriceCard = ({price, getLocalState, advice, adviceStub, headerSelections, isAlreadyInAdvice, pricesetterPrice, umfeld}) => {
 	const [intervalMode] = useConfig("intervalMode");
 	const [deltaMode] = useConfig("deltaMode");
-	const PriceInfo = usePriceInfo();
+	const [volumeMode] = useConfig("volumeMode");
 
+	const PriceInfo = usePriceInfo();
+	const [overridden, setOverridden] = useState(false);
 
 
 	const [{grabAdvice}, adviceDispatch] = useStore();
@@ -37,15 +39,16 @@ const PriceCard = ({price, getLocalState, advice, adviceStub, headerSelections, 
 	const inAdvice = thisIsAlreadyInAdvice;
 
 
-	const couldBeAdviced = price.rsp && (price.rsp < advice) && price.volume && !umfeld;
+	// const couldBeAdviced = price.rsp && (price.rsp < advice) && price.volume && !umfeld;
+	const couldBeAdviced = volumeMode ? (price.rsp && (price.rsp < advice) && price.volume && !umfeld) : (price.rsp && (price.rsp < advice)  && !umfeld);
+
+	const couldBeOverridden = !couldBeAdviced && !umfeld;
 
 	const [localState, setLocalState] = getLocalState;
 
 	const columnSelect = retailerSelect[price.retailer];
-	const selectedForAdvice = couldBeAdviced && localState;
+	const selectedForAdvice = (couldBeAdviced || overridden) && localState;
 	const adviceButNotInAdvice = thisIsAlreadyInAdvice && !selectedForAdvice;
-
-
 
 	let delta = price.rsp - price[intervalMode];
 
@@ -65,7 +68,6 @@ const PriceCard = ({price, getLocalState, advice, adviceStub, headerSelections, 
 		}
 	}, [grabAdvice]);
 
-
 	useEffect(() => {
 		setLocalState(columnSelect);
 	}, [columnSelect]);
@@ -78,16 +80,26 @@ const PriceCard = ({price, getLocalState, advice, adviceStub, headerSelections, 
 
 
 	const handleLocalChange = () => {
+		localState && overridden && setOverridden(false);
 		couldBeAdviced && setLocalState(!localState);
 	};
 
+	const override = e => {
+		if (couldBeOverridden) {
+			e.preventDefault();
+			setOverridden(!overridden);
+			setLocalState(!overridden);
+		}
+	};
+
+
 	return (
-		<div className={`price-card ${couldBeAdviced ? "clickable" : ""}`} onClick={handleLocalChange}>
+		<div className={`price-card ${couldBeAdviced ? "clickable" : ""}`} onClick={handleLocalChange} onDoubleClick={override}>
 			{(price.rsp || price.volume) ?
 				<>
 					<div className="price"><EuroFormat value={price.rsp}/></div>
 					{delta ? <div className="delta"><NumberFormat value={delta} displayType="text" decimalSeparator="," thousandSeparator="." suffix={deltaMode && "%"}/></div> : <></>}
-					<div className="info"><PriceInfo price={price} advice={advice} selectedForAdvice={selectedForAdvice}/></div>
+					<div className="info"><PriceInfo price={price} advice={advice} selectedForAdvice={selectedForAdvice} pricesetterPrice={pricesetterPrice}/></div>
 				</>
 				:
 				<></>
@@ -99,7 +111,7 @@ const PriceCard = ({price, getLocalState, advice, adviceStub, headerSelections, 
 				    overflow: hidden;
 						width: 100%;
 						height: 100%;
-						${(!price.rsp && !price.volume) ? `background-color: ${ballet_pink.color} !important;` : ((!price.rsp || !price.volume) && !umfeld) ? "background-color: #bbb !important;": ""}
+						${(!price.rsp && !price.volume) ? `background-color: ${ballet_pink.color} !important;` : ((!price.rsp || (volumeMode && !price.volume)) && !umfeld) ? "background-color: #bbb !important;": ""}
 						${selectedForAdvice ? `background-color: ${denim_blue.color} !important` : ""};
 						${selectedForAdvice && inAdvice ? `background-color: ${orchid_purple.color} !important` : ""};
 

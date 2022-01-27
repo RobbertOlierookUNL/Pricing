@@ -29,17 +29,19 @@ const TableRow = ({entry, even, headerSelections, isAlreadyInAdvice, doSelectAll
 	const getLocalState = idx => {
 		const localState = localStates[idx];
 		const setLocalState = value => {
-			const copy = [...localStates];
-			copy[idx] = value;
-			setLocalStates(copy);
+			localStates[idx] = value;
+			setLocalStates([...localStates]);
 		};
 		return [localState, setLocalState];
 	};
-	const noneSelected = localStates.reduce((acc, val) => !(acc || val));
+	//moveup couldBeAdviced
+
+	const noneSelected = !localStates.reduce((acc, val) => acc || val);
 	const [{grabAdvice}, adviceDispatch] = useStore();
 
 	useEffect(() => {
 		if (triggerSaveAdvicePrices) {
+			console.log("hi");
 			saveAdvicePrices();
 		}
 	}, [triggerSaveAdvicePrices]);
@@ -92,7 +94,9 @@ const TableRow = ({entry, even, headerSelections, isAlreadyInAdvice, doSelectAll
 						advice={price.adviceCap === "H" ? adviceHigh : adviceLow}
 						isAlreadyInAdvice={isAlreadyInAdvice}
 						umfeld={umfeld}
-						headerSelections={headerSelections}/>
+						headerSelections={headerSelections}
+						pricesetterPrice={info?.priceSetterPrice || 0
+						}/>
 
 
 				);

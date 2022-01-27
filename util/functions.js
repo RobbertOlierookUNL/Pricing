@@ -1,5 +1,13 @@
 import * as FileSaver from "file-saver";
 
+export function deepEqual(x, y) {
+	const ok = Object.keys, tx = typeof x, ty = typeof y;
+	return x && y && tx === "object" && tx === ty ? (
+		ok(x).length === ok(y).length &&
+      ok(x).every(key => deepEqual(x[key], y[key]))
+	) : (x === y);
+}
+
 export const saveParse = (toParse, defaultVal = []) => {
 	try {
 		const parsed = toParse ? JSON.parse(toParse) : defaultVal;
@@ -7,6 +15,18 @@ export const saveParse = (toParse, defaultVal = []) => {
 	} catch (e) {
 		return toParse;
 	}
+};
+
+export const accumelateWeightedAverage = (value, weight, acc) => {
+	const {weightedValue, totalWeight} = acc || {weightedValue: 0, totalWeight: 0};
+	return {
+		weightedValue: weightedValue + value * weight,
+		totalWeight: totalWeight + weight
+	};
+};
+export const getWeightedAverage = acc => {
+	const {weightedValue, totalWeight} = acc || {weightedValue: 0, totalWeight: 1};
+	return weightedValue / totalWeight;
 };
 
 export const myFetch = async (method, url, body) => {
@@ -37,6 +57,12 @@ export const calculateMargin = (advice, rsp, volume) => {
 	const difference = advice - rsp;
 	const margin = difference * volume;
 	return margin || "";
+};
+
+export const calculateVolume = (advice, rsp, margin) => {
+	const difference = advice - rsp;
+	const volume = difference ? margin / difference : 0;
+	return volume || "";
 };
 
 export const distanceMaker = (value, inversed = false) => {
@@ -97,8 +123,8 @@ export const makeRetailSalesPrice = (value) => {
 		}
 		return float;
 	};
-
-	return secondLastDecimalSwitcher(lastDecimalSwitcher(float));
+	const r = secondLastDecimalSwitcher(lastDecimalSwitcher(float));
+	return r < 0 ? 0 : r;
 };
 
 export const propertySetter = (object, value, clone, ...nests) => {
@@ -114,6 +140,26 @@ export const propertySetter = (object, value, clone, ...nests) => {
 	}
 	return thisObject;
 };
+
+export const propertySetterFillArray = (object, value, clone, ...nests) => {
+	const thisObject = clone ? {...object} : object;
+	let ref = thisObject;
+	for (const [idx, nest] of nests.entries()) {
+		if (idx+1 === nests.length) {
+			Array.isArray(ref?.[nest])
+				?
+				ref[nest].push(value)
+				:
+				ref[nest] = [value];
+		} else if (!ref[nest]) {
+			ref[nest]={};
+		}
+		ref = ref[nest];
+	}
+	return thisObject;
+};
+
+
 
 function s2ab(s) {
 	var buf = new ArrayBuffer(s.length);
@@ -162,6 +208,10 @@ export const getIntervalDay = ({y = 0, m = 0, d = 0}) => {
 //
 // }
 
+export function isNumeric(n) {
+	return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
 export const getDateString = day => {
 	const f = new Intl.DateTimeFormat("nl").format(day);
 	const a = f.split("-");
@@ -172,7 +222,74 @@ export const getDateString = day => {
 };
 
 
-
+export const getNicknameKey = (cluster, brand, nickname) => [cluster, brand, nickname].join("-");
+export const parseNicknameKey = key => {
+	const [cluster, brand, nickname] = key.split("-");
+	return {cluster, brand, nickname};
+};
 
 
 export const getAvg = (arr) => arr.reduce(function(p,c,i){return p+(c-p)/(i+1);},0);
+
+export const createAooFromServerData = serverData => {
+	const aoo = [];
+	if (serverData?.body) {
+		for (const e of serverData.body) {
+			let obj = {
+				NASA: e.NASA,
+				"Totale waarde": e.approxWorth,
+				"Totaal volume": e.totalVolume,
+				EAN: e.EAN_CE,
+				Merk: e.brand,
+				Concept: e.concept,
+				Artikelomschrijving: e.Artikelomschrijving,
+				"CAP H": e.CAP_H,
+				"CAP L": e.CAP_L,
+				"Opgeslagen Advies H": e.defaultAdviceHigh?.saved || "-",
+				"Opgeslagen Advies L":  e.defaultAdviceLow?.saved || "-",
+			};
+			for (const p of e.prices) {
+				const obj2 = {
+					[`${p.retailer} RSP vandaag`]: p.Price,
+					[`${p.retailer} RSP gisteren`]: p.dayRsp,
+					[`${p.retailer} RSP vorige week`]: p.weekRsp,
+					[`${p.retailer} RSP vorige maand`]: p.monthRsp,
+					[`${p.retailer} RSP 1 januari`]: p.ytdRsp,
+					[`${p.retailer} Laatste meting op`]: p.LastMeasurementDate,
+					[`${p.retailer} Volume`]: p.volume,
+
+				};
+				obj = {...obj, ...obj2};
+			}
+			aoo.push(obj);
+		}
+	}
+	return aoo;
+
+};
+
+
+export const downloadExcelFromAoo = async (aoo, title) => {
+	try {
+		const body = JSON.stringify({
+			aoo
+		});
+
+		const res = await fetch("/api/download/get-buffer-from-aoo", {
+			method: "POST",
+			body,
+			headers: {
+				"Content-type": "application/json; charset=UTF-8"
+			}
+		});
+		const {buffer} = await res.json();
+		excelDownloader(buffer, title);
+
+		if (!res.ok) {
+			console.log({res});
+			 }
+
+	} catch (e) {
+		console.log({e});
+	}
+};
